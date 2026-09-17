@@ -221,6 +221,16 @@
 
     <!-- Scripts de Lógica -->
     <script>
+        // ==========================================
+        // SEGURIDAD DE ACCESO AL ADMIN
+        // ==========================================
+        // Verifica si el usuario vino desde el login correcto.
+        // sessionStorage se borra al cerrar la pestaña, por lo que es una medida de seguridad básica
+        // para una sesión activa. Si no existe, redirige al inicio.
+        if (sessionStorage.getItem('adminAuthenticated') !== 'true') {
+            window.location.href = 'index.html'; // Redirige a la página principal si no está autenticado
+        }
+
         // Array Principal de Inventario (Simulando Base de Datos)
         let inventario = [
             { id: 'PAN-001', code: 'PAN-001', name: 'Pan Canilla (Bandeja 12 und)', category: 'Panadería', price: 1.50, stock: 45, image: null },
