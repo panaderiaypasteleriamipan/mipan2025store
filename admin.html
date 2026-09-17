@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | MiPan 2025 C.A.</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            900: '#78350f',
+                        }
+                    },
+                    fontFamily: { sans: ['Public Sans', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-sans h-screen flex overflow-hidden">
+
+    <!-- Sidebar (Menú Lateral) -->
+    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 hidden md:flex flex-col flex-shrink-0 z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800">
+            <div class="flex items-center gap-3 text-brand-600 dark:text-brand-500 font-bold text-xl">
+                <i class="fa-solid fa-bread-slice text-2xl"></i>
+                <span>MiPan 2025</span>
+            </div>
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400 font-medium transition">
+                <i class="fa-solid fa-boxes-stacked w-5"></i> Inventario Central
+            </a>
+            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition">
+                <i class="fa-solid fa-tags w-5"></i> Categorías
+            </a>
+            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition">
+                <i class="fa-brands fa-whatsapp w-5"></i> Pedidos Activos
+            </a>
+            <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition">
+                <i class="fa-solid fa-chart-line w-5"></i> Reportes
+            </a>
+        </nav>
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+            <button onclick="toggleDarkMode()" class="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                <i id="darkModeIcon" class="fa-solid fa-moon"></i> <span id="darkModeText">Modo Oscuro</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Contenido Principal -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50 dark:bg-gray-900/50">
+        
+        <!-- Topbar -->
+        <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 sm:px-6 z-10 flex-shrink-0">
+            <div class="flex items-center gap-4 w-full max-w-lg">
+                <button class="md:hidden text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+                <div class="relative w-full hidden sm:block">
+                    <input type="text" id="searchInput" oninput="renderTable()" placeholder="Buscar producto por código o nombre..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border-transparent focus:bg-white dark:focus:bg-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-500 text-sm transition">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-2.5 text-gray-400"></i>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="openModal()" class="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition shadow-sm">
+                    <i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Nuevo Producto</span>
+                </button>
+                <img src="https://ui-avatars.com/api/?name=Admin+MiPan&background=b45309&color=fff" alt="Avatar" class="w-9 h-9 rounded-full border-2 border-white dark:border-gray-800 shadow-sm">
+            </div>
+        </header>
+
+        <!-- Área de Datos (Scrollable) -->
+        <div class="flex-1 overflow-y-auto p-4 sm:p-6">
+            
+            <!-- KPIs -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 flex items-center justify-center text-xl"><i class="fa-solid fa-cubes"></i></div>
+                    <div><p class="text-xs text-gray-500 font-medium">Total Productos</p><h3 class="text-2xl font-bold" id="kpiTotal">0</h3></div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-lg bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 flex items-center justify-center text-xl"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div><p class="text-xs text-gray-500 font-medium">Bajo Stock</p><h3 class="text-2xl font-bold" id="kpiLow">0</h3></div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-lg bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 flex items-center justify-center text-xl"><i class="fa-solid fa-sack-dollar"></i></div>
+                    <div><p class="text-xs text-gray-500 font-medium">Valor Inventario</p><h3 class="text-2xl font-bold" id="kpiValue">$0.00</h3></div>
+                </div>
+            </div>
+
+            <!-- Tabla de Gestión -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-gray-50 dark:bg-gray-900/50 text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
+                            <tr>
+                                <th class="px-4 py-3 font-semibold w-16 text-center">Imagen</th>
+                                <th class="px-4 py-3 font-semibold">Código</th>
+                                <th class="px-4 py-3 font-semibold">Nombre del Producto</th>
+                                <th class="px-4 py-3 font-semibold">Categoría</th>
+                                <th class="px-4 py-3 font-semibold text-right">Precio ($)</th>
+                                <th class="px-4 py-3 font-semibold text-center">Stock</th>
+                                <th class="px-4 py-3 font-semibold text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTable" class="divide-y divide-gray-100 dark:divide-gray-700">
+                            <!-- Filas inyectadas por JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Modal Formulario (Crear/Editar) -->
+    <div id="productModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
+        <div class="bg-white dark:bg-gray-900 rounded-xl max-w-2xl w-full shadow-2xl border border-gray-200 dark:border-gray-800 relative">
+            
+            <div class="flex justify-between items-center p-5 border-b border-gray-200 dark:border-gray-800">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white" id="modalTitle">Agregar Nuevo Producto</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <form id="productForm" onsubmit="saveProduct(event)" class="p-5 flex flex-col md:flex-row gap-6">
+                <!-- Zona de Imagen -->
+                <div class="flex-shrink-0 w-full md:w-1/3 flex flex-col items-center">
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 w-full">Imagen del Producto</label>
+                    <div class="w-full aspect-square border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800 overflow-hidden relative group cursor-pointer" onclick="document.getElementById('imageInput').click()">
+                        
+                        <img id="imagePreview" src="" class="absolute inset-0 w-full h-full object-cover hidden" alt="Vista previa">
+                        
+                        <div id="imagePlaceholder" class="text-center p-4">
+                            <i class="fa-regular fa-image text-4xl text-gray-400 mb-2"></i>
+                            <p class="text-xs text-gray-500">Haz clic para buscar en tu carpeta</p>
+                        </div>
+
+                        <!-- Overlay Hover -->
+                        <div class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center transition">
+                            <span class="text-white text-xs font-bold"><i class="fa-solid fa-pen"></i> Cambiar Foto</span>
+                        </div>
+                    </div>
+                    <!-- Input oculto para seleccionar archivo de la computadora -->
+                    <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="handleImageSelect(event)">
+                    <button type="button" onclick="clearImage()" class="text-red-500 text-xs font-medium mt-2 hover:underline hidden" id="btnRemoveImg">Quitar imagen</button>
+                </div>
+
+                <!-- Campos de Datos -->
+                <div class="flex-grow space-y-4">
+                    <input type="hidden" id="formId">
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Código (SKU) <span class="text-red-500">*</span></label>
+                            <input type="text" id="formCode" required class="w-full text-sm p-2 rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-brand-500 uppercase">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Categoría <span class="text-red-500">*</span></label>
+                            <select id="formCategory" required class="w-full text-sm p-2 rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-brand-500">
+                                <option value="Panadería">Panadería</option>
+                                <option value="Pastelería">Pastelería</option>
+                                <option value="Especialidades">Especialidades</option>
+                                <option value="Bebidas">Bebidas</option>
+                                <option value="Materia Prima">Materia Prima</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre del Producto <span class="text-red-500">*</span></label>
+                        <input type="text" id="formName" required class="w-full text-sm p-2 rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-brand-500">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Precio Regular ($) <span class="text-red-500">*</span></label>
+                            <input type="number" id="formPrice" step="0.01" min="0" required class="w-full text-sm p-2 rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-brand-500 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Unidades / Stock <span class="text-red-500">*</span></label>
+                            <input type="number" id="formStock" min="0" required class="w-full text-sm p-2 rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-900 focus:ring-2 focus:ring-brand-500 font-mono">
+                        </div>
+                    </div>
+
+                    <div class="pt-4 flex justify-end gap-3 border-t border-gray-200 dark:border-gray-800">
+                        <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 transition">Cancelar</button>
+                        <button type="submit" class="px-4 py-2 rounded-lg text-sm font-semibold bg-brand-600 hover:bg-brand-700 text-white transition">Guardar Producto</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts de Lógica -->
+    <script>
+        // Array Principal de Inventario (Simulando Base de Datos)
+        let inventario = [
+            { id: 'PAN-001', code: 'PAN-001', name: 'Pan Canilla (Bandeja 12 und)', category: 'Panadería', price: 1.50, stock: 45, image: null },
+            { id: 'PAN-002', code: 'PAN-002', name: 'Pan Campesino Tradicional', category: 'Panadería', price: 1.00, stock: 24, image: null },
+            { id: 'ESP-001', code: 'ESP-001', name: 'Pan de Jamón (Temporada)', category: 'Especialidades', price: 15.00, stock: 5, image: null },
+            { id: 'PAS-001', code: 'PAS-001', name: 'Cachito de Jamón', category: 'Pastelería', price: 1.20, stock: 0, image: null },
+        ];
+
+        let currentImageBlob = null; // Guarda la imagen seleccionada temporalmente
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initDarkMode();
+            renderTable();
+        });
+
+        // ==========================================
+        // MODO OSCURO
+        // ==========================================
+        function initDarkMode() {
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                updateDarkUI(true);
+            }
+        }
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateDarkUI(isDark);
+        }
+        function updateDarkUI(isDark) {
+            document.getElementById('darkModeIcon').className = isDark ? 'fa-solid fa-sun text-brand-500' : 'fa-solid fa-moon text-gray-500';
+            document.getElementById('darkModeText').innerText = isDark ? 'Modo Claro' : 'Modo Oscuro';
+        }
+
+        // ==========================================
+        // RENDERIZADO Y BÚSQUEDA
+        // ==========================================
+        function renderTable() {
+            const tbody = document.getElementById('inventoryTable');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            tbody.innerHTML = '';
+            
+            let totalValue = 0;
+            let lowStock = 0;
+
+            const filtered = inventario.filter(item => 
+                item.name.toLowerCase().includes(search) || item.code.toLowerCase().includes(search)
+            );
+
+            if(filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-gray-500">No se encontraron productos.</td></tr>`;
+            }
+
+            filtered.forEach(item => {
+                totalValue += (item.price * item.stock);
+                if(item.stock <= 5) lowStock++;
+
+                let stockStatus = "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
+                if(item.stock === 0) stockStatus = "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+                else if(item.stock <= 10) stockStatus = "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-500";
+
+                // Definir miniatura de imagen
+                const imgSrc = item.image ? item.image : 'https://placehold.co/100x100/f3f4f6/a1a1aa?text=Sin+Foto';
+
+                const row = `
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+                        <td class="px-4 py-2 text-center">
+                            <div class="w-10 h-10 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 mx-auto shadow-sm">
+                                <img src="${imgSrc}" class="w-full h-full object-cover" alt="${item.name}">
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-xs text-gray-500 dark:text-gray-400">${item.code}</td>
+                        <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">${item.name}</td>
+                        <td class="px-4 py-3 text-xs"><span class="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">${item.category}</span></td>
+                        <td class="px-4 py-3 text-right font-mono font-bold text-brand-600 dark:text-brand-400">$${item.price.toFixed(2)}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 rounded text-xs font-bold ${stockStatus}">
+                                ${item.stock}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <button onclick="openModal('${item.id}')" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 p-1 mx-1 transition" title="Editar">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="deleteProduct('${item.id}')" class="text-red-500 hover:text-red-700 dark:text-red-400 p-1 mx-1 transition" title="Eliminar">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+
+            // Actualizar KPIs
+            document.getElementById('kpiTotal').innerText = inventario.length;
+            document.getElementById('kpiLow').innerText = lowStock;
+            document.getElementById('kpiValue').innerText = `$${totalValue.toFixed(2)}`;
+        }
+
+        // ==========================================
+        // GESTIÓN DE FORMULARIO Y MODAL
+        // ==========================================
+        function openModal(id = null) {
+            document.getElementById('productForm').reset();
+            clearImage();
+            
+            if (id) {
+                // Modo Edición
+                document.getElementById('modalTitle').innerText = 'Editar Producto';
+                const item = inventario.find(i => i.id === id);
+                document.getElementById('formId').value = item.id;
+                document.getElementById('formCode').value = item.code;
+                document.getElementById('formName').value = item.name;
+                document.getElementById('formCategory').value = item.category;
+                document.getElementById('formPrice').value = item.price;
+                document.getElementById('formStock').value = item.stock;
+                
+                if(item.image) {
+                    setPreviewImage(item.image);
+                    currentImageBlob = item.image; // Mantiene la imagen existente si no se cambia
+                }
+            } else {
+                // Modo Creación
+                document.getElementById('modalTitle').innerText = 'Agregar Nuevo Producto';
+                document.getElementById('formId').value = '';
+            }
+            
+            document.getElementById('productModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('productModal').classList.add('hidden');
+        }
+
+        function saveProduct(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('formId').value;
+            const code = document.getElementById('formCode').value.toUpperCase();
+            
+            const productData = {
+                code: code,
+                name: document.getElementById('formName').value,
+                category: document.getElementById('formCategory').value,
+                price: parseFloat(document.getElementById('formPrice').value),
+                stock: parseInt(document.getElementById('formStock').value),
+                image: currentImageBlob // Guarda el archivo visual seleccionado
+            };
+
+            if (id) {
+                // Actualizar existente
+                const index = inventario.findIndex(i => i.id === id);
+                inventario[index] = { ...inventario[index], ...productData };
+            } else {
+                // Crear nuevo (Generar ID único basado en código o fecha)
+                productData.id = code + '-' + Date.now();
+                inventario.unshift(productData); // Agrega al principio
+            }
+
+            renderTable();
+            closeModal();
+        }
+
+        function deleteProduct(id) {
+            if(confirm('¿Estás seguro de que deseas eliminar este producto del inventario?')) {
+                inventario = inventario.filter(i => i.id !== id);
+                renderTable();
+            }
+        }
+
+        // ==========================================
+        // GESTIÓN DE IMÁGENES (LOCAL)
+        // ==========================================
+        function handleImageSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Crea una URL local para visualizar el archivo de la computadora
+                const fileURL = URL.createObjectURL(file);
+                currentImageBlob = fileURL;
+                setPreviewImage(fileURL);
+            }
+        }
+
+        function setPreviewImage(url) {
+            const preview = document.getElementById('imagePreview');
+            const placeholder = document.getElementById('imagePlaceholder');
+            const btnRemove = document.getElementById('btnRemoveImg');
+            
+            preview.src = url;
+            preview.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+            btnRemove.classList.remove('hidden');
+        }
+
+        function clearImage() {
+            currentImageBlob = null;
+            document.getElementById('imageInput').value = '';
+            document.getElementById('imagePreview').classList.add('hidden');
+            document.getElementById('imagePreview').src = '';
+            document.getElementById('imagePlaceholder').classList.remove('hidden');
+            document.getElementById('btnRemoveImg').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
