@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Inventario | MiPan 2025 C.A.</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        corp: {
+                            50: '#fffbeb',  /* Tonos cálidos/panadería */
+                            100: '#fef3c7',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            900: '#78350f',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Public Sans', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #d97706; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-track { background: #1f2937; }
+        .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-sans transition-colors duration-300 min-h-screen flex flex-col">
+
+    <!-- Barra de Estado / KPIs -->
+    <div class="bg-gradient-to-r from-corp-700 to-corp-900 text-white text-xs sm:text-sm py-2 px-4 shadow-inner">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div class="flex items-center gap-4 font-medium">
+                <span><i class="fa-solid fa-boxes-stacked text-corp-100 mr-1"></i> Catálogo: <strong id="totalSkus">0</strong> ítems</span>
+                <span><i class="fa-solid fa-triangle-exclamation text-yellow-300 mr-1"></i> Bajo Stock / Por Hornear: <strong id="lowStockCount">0</strong></span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span><i class="fa-solid fa-location-dot text-corp-100 mr-1"></i> Los Teques, Edo. Miranda</span>
+                <span class="mx-2 opacity-50">|</span>
+                <span class="bg-corp-500 text-white font-bold px-2 py-0.5 rounded text-xs">Tasa Ref: <strong id="tasaRef">68.50</strong> Bs/$</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navegación Principal -->
+    <header class="sticky top-0 z-40 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
+            
+            <a href="#" class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-corp-600 text-white flex items-center justify-center text-xl shadow-md">
+                    <i class="fa-solid fa-bread-slice"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-tight text-corp-700 dark:text-corp-500 leading-tight">
+                        MiPan 2025 C.A.
+                    </h1>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                        Panadería & Pastelería • Panel de Administración
+                    </p>
+                </div>
+            </a>
+
+            <!-- Buscador -->
+            <div class="hidden md:flex flex-1 max-w-lg mx-4">
+                <div class="relative w-full">
+                    <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="Buscar producto, categoría o materia prima..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-corp-500">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-2.5 text-gray-400"></i>
+                </div>
+            </div>
+
+            <!-- Controles -->
+            <div class="flex items-center gap-2">
+                <button onclick="toggleDarkMode()" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                    <i id="darkModeIcon" class="fa-solid fa-moon"></i>
+                </button>
+                <button class="hidden sm:flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition" title="Gestión de Pedidos WhatsApp">
+                    <i class="fa-brands fa-whatsapp text-lg"></i> Pedidos
+                </button>
+                <button onclick="exportarCSV()" class="hidden md:flex items-center gap-2 bg-corp-600 hover:bg-corp-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">
+                    <i class="fa-solid fa-file-csv"></i> Exportar
+                </button>
+            </div>
+        </div>
+        
+        <!-- Buscador Móvil -->
+        <div class="md:hidden px-4 pb-3 pt-2">
+            <div class="relative w-full">
+                <input type="text" oninput="handleSearch(this.value)" placeholder="Buscar en inventario..." class="w-full pl-10 pr-4 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-corp-500">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-2 text-gray-400"></i>
+            </div>
+            <button class="w-full mt-2 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">
+                <i class="fa-brands fa-whatsapp"></i> Ver Pedidos WhatsApp
+            </button>
+        </div>
+    </header>
+
+    <!-- Panel de Inventario -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+        
+        <!-- Filtros -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+                Control de Producción e Inventario
+            </h3>
+            <div class="flex flex-wrap items-center gap-2" id="categoryFilters">
+                <!-- Se inyectan vía JS -->
+            </div>
+        </div>
+
+        <!-- Tabla de Inventario -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-x-auto">
+            <table class="w-full text-left text-sm whitespace-nowrap">
+                <thead class="bg-gray-50 dark:bg-gray-900/50 text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
+                    <tr>
+                        <th class="px-4 py-3 font-semibold">Código</th>
+                        <th class="px-4 py-3 font-semibold">Producto / Insumo</th>
+                        <th class="px-4 py-3 font-semibold">Categoría</th>
+                        <th class="px-4 py-3 font-semibold text-right">Precio Ref (USD)</th>
+                        <th class="px-4 py-3 font-semibold text-center">Unidades / Stock</th>
+                        <th class="px-4 py-3 font-semibold text-center">Ajustar</th>
+                    </tr>
+                </thead>
+                <tbody id="inventoryTable" class="divide-y divide-gray-100 dark:divide-gray-700">
+                    <!-- Filas dinámicas -->
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+
+    <!-- Modal de Edición de Stock -->
+    <div id="stockModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white dark:bg-gray-900 rounded-xl max-w-sm w-full p-5 shadow-2xl border border-gray-200 dark:border-gray-800">
+            <h4 class="font-bold text-gray-900 dark:text-white text-lg mb-1">Ajustar Inventario / Producción</h4>
+            <p id="modalProductName" class="text-xs text-corp-600 dark:text-corp-400 font-medium mb-4">Producto</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Cantidad Actual en Vitrina/Almacén</label>
+                    <input type="number" id="newStockInput" class="w-full text-lg p-2 rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-corp-500 font-bold">
+                </div>
+                <input type="hidden" id="editProductId">
+                <div class="flex justify-end gap-2 pt-2">
+                    <button onclick="closeModal()" class="px-4 py-2 rounded-lg text-sm font-semibold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 transition">Cancelar</button>
+                    <button onclick="saveStock()" class="px-4 py-2 rounded-lg text-sm font-semibold bg-corp-600 hover:bg-corp-700 text-white transition">Guardar Stock</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de Lógica -->
+    <script>
+        // Datos Iniciales del Inventario - Adaptado a MiPan 2025
+        let inventario = [
+            { id: 'PAN-001', nombre: 'Pan Canilla (Bandeja 12 und)', categoria: 'Panadería', precio: 1.50, stock: 45, minStock: 10, tipo: 'Físico' },
+            { id: 'PAN-002', nombre: 'Pan Campesino Tradicional', categoria: 'Panadería', precio: 1.00, stock: 24, minStock: 8, tipo: 'Físico' },
+            { id: 'ESP-001', nombre: 'Pan de Jamón (Temporada)', categoria: 'Especialidades', precio: 15.00, stock: 5, minStock: 3, tipo: 'Físico' },
+            { id: 'PAS-001', nombre: 'Cachito de Jamón', categoria: 'Pastelería Salada', precio: 1.20, stock: 12, minStock: 15, tipo: 'Físico' },
+            { id: 'PAS-002', nombre: 'Golfeado con Queso de Mano', categoria: 'Pastelería Dulce', precio: 1.80, stock: 0, minStock: 10, tipo: 'Físico' },
+            { id: 'BEB-001', nombre: 'Café Espresso / Marroncito (8oz)', categoria: 'Bebidas', precio: 1.20, stock: 999, minStock: 1, tipo: 'Servicio' },
+            { id: 'MAT-001', nombre: 'Harina de Trigo (Saco 45kg)', categoria: 'Materia Prima', precio: 42.00, stock: 3, minStock: 5, tipo: 'Insumo' }
+        ];
+
+        let currentCategory = 'Todos';
+        let searchQuery = '';
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initDarkMode();
+            renderFilters();
+            renderInventory();
+        });
+
+        // Modo Oscuro
+        function initDarkMode() {
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('darkModeIcon').className = 'fa-solid fa-sun';
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('darkModeIcon').className = 'fa-solid fa-moon';
+            }
+        }
+
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.getElementById('darkModeIcon').className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        }
+
+        // Filtros y Búsqueda
+        function handleSearch(val) {
+            searchQuery = val.toLowerCase();
+            renderInventory();
+        }
+
+        function setCategory(cat) {
+            currentCategory = cat;
+            renderFilters();
+            renderInventory();
+        }
+
+        function renderFilters() {
+            const container = document.getElementById('categoryFilters');
+            const categories = ['Todos', ...new Set(inventario.map(i => i.categoria))];
+            
+            container.innerHTML = categories.map(cat => {
+                const isActive = cat === currentCategory;
+                const baseClass = "px-4 py-1.5 rounded-full text-sm font-medium transition cursor-pointer border";
+                const activeClass = isActive 
+                    ? "bg-corp-600 text-white border-corp-600 shadow-sm" 
+                    : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-corp-500";
+                return `<button onclick="setCategory('${cat}')" class="${baseClass} ${activeClass}">${cat}</button>`;
+            }).join('');
+        }
+
+        // Renderizado de Tabla
+        function renderInventory() {
+            const tbody = document.getElementById('inventoryTable');
+            let lowStockCount = 0;
+            tbody.innerHTML = '';
+
+            const filtrados = inventario.filter(item => {
+                const matchCat = currentCategory === 'Todos' || item.categoria === currentCategory;
+                const matchBus = item.nombre.toLowerCase().includes(searchQuery) || item.id.toLowerCase().includes(searchQuery);
+                return matchCat && matchBus;
+            });
+
+            document.getElementById('totalSkus').innerText = filtrados.length;
+
+            if(filtrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-gray-500">No se encontraron productos en esta categoría.</td></tr>`;
+                document.getElementById('lowStockCount').innerText = '0';
+                return;
+            }
+
+            filtrados.forEach(item => {
+                let stockClass = "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300";
+                let icon = "fa-check-circle";
+                let stockDisplay = item.stock;
+                
+                if (item.tipo === 'Servicio' || item.stock === 999) {
+                    stockClass = "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
+                    icon = "fa-mug-hot";
+                    stockDisplay = "A Pedido";
+                } else if (item.stock === 0) {
+                    stockClass = "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300";
+                    icon = "fa-circle-xmark";
+                    lowStockCount++;
+                } else if (item.stock <= item.minStock) {
+                    stockClass = "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300";
+                    icon = "fa-fire-burner";
+                    lowStockCount++;
+                }
+
+                const row = `
+                    <tr class="hover:bg-orange-50 dark:hover:bg-gray-800/80 transition">
+                        <td class="px-4 py-3 font-mono text-xs text-gray-500 dark:text-gray-400">${item.id}</td>
+                        <td class="px-4 py-3 font-semibold text-gray-900 dark:text-white">${item.nombre}</td>
+                        <td class="px-4 py-3"><span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded text-xs border border-gray-200 dark:border-gray-600">${item.categoria}</span></td>
+                        <td class="px-4 py-3 text-right font-bold text-corp-600 dark:text-corp-400">$${item.precio.toFixed(2)}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${stockClass}">
+                                <i class="fa-solid ${icon}"></i> ${stockDisplay}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            ${item.tipo !== 'Servicio' ? 
+                            `<button onclick="openModal('${item.id}')" class="bg-gray-100 dark:bg-gray-700 text-corp-600 hover:text-white hover:bg-corp-600 dark:text-corp-400 dark:hover:text-white dark:hover:bg-corp-600 p-2 rounded transition shadow-sm" title="Modificar Stock">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>` : `<span class="text-gray-400 text-xs">-</span>`}
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+
+            document.getElementById('lowStockCount').innerText = lowStockCount;
+        }
+
+        // Gestión del Modal
+        function openModal(id) {
+            const item = inventario.find(i => i.id === id);
+            if(item) {
+                document.getElementById('editProductId').value = id;
+                document.getElementById('modalProductName').innerText = `${item.id} - ${item.nombre}`;
+                document.getElementById('newStockInput').value = item.stock;
+                document.getElementById('stockModal').classList.remove('hidden');
+                setTimeout(() => document.getElementById('newStockInput').focus(), 100);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('stockModal').classList.add('hidden');
+        }
+
+        function saveStock() {
+            const id = document.getElementById('editProductId').value;
+            const newStock = parseInt(document.getElementById('newStockInput').value);
+            
+            if(!isNaN(newStock) && newStock >= 0) {
+                const index = inventario.findIndex(i => i.id === id);
+                if(index !== -1) {
+                    inventario[index].stock = newStock;
+                    renderInventory();
+                    closeModal();
+                }
+            }
+        }
+
+        // Exportación CSV
+        function exportarCSV() {
+            let csv = "Codigo,Producto,Categoria,Precio_USD,Unidades\n";
+            inventario.forEach(i => {
+                csv += `${i.id},"${i.nombre}",${i.categoria},${i.precio},${i.stock === 999 ? 'Servicio' : i.stock}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "Inventario_MiPan2025.csv";
+            link.click();
+        }
+    </script>
+</body>
+</html>
