@@ -730,6 +730,7 @@
             initNetworkStatus();
             initSnowCanvas();
             renderBcvRate();
+            fetchBCVRate(); // Integración automática de la tasa BCV
             renderProducts();
             renderReviews();
             updateCartBadge();
@@ -742,6 +743,31 @@
         // BCV Rate Rendering & Modal
         function renderBcvRate() {
             document.getElementById('bcvRateDisplay').innerText = bcvRate.toFixed(2);
+        }
+
+        // Consumo de API para obtener la tasa oficial del BCV automáticamente
+        async function fetchBCVRate() {
+            try {
+                // Se utiliza ve.dolarapi.com por ser un endpoint público, confiable y libre de problemas de CORS para frontend
+                const response = await fetch('https://ve.dolarapi.com/v1/dolares/oficial');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.promedio) {
+                        const nuevaTasa = parseFloat(data.promedio);
+                        // Solo actualiza si la tasa es diferente o válida
+                        if (nuevaTasa > 0 && nuevaTasa !== bcvRate) {
+                            bcvRate = nuevaTasa;
+                            localStorage.setItem('mipan_bcv_rate', bcvRate.toString());
+                            renderBcvRate();
+                            renderProducts(); // Refresca los precios en el catálogo
+                            updateCartTotals(); // Refresca los totales en el carrito
+                            showToast(`Tasa BCV sincronizada automáticamente: ${bcvRate.toFixed(2)} Bs/$`);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.warn('No se pudo actualizar la tasa desde la API. Se mantendrá la tasa local.', error);
+            }
         }
 
         function openRateModal() {
