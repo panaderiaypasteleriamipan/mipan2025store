@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tienda | Smith Business Solutions</title>
+    <title>Catálogo | Panadería MiPan 2025</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,7 +18,7 @@
             theme: {
                 extend: {
                     colors: {
-                        classic: { 500: '#1e293b', 600: '#0f172a', text: '#f8fafc' },
+                        classic: { 500: '#d97706', 600: '#b45309', text: '#fffbeb' }, /* Tonos cálidos de panadería */
                         navidad: { 500: '#dc2626', 600: '#b91c1c', text: '#fef2f2' }
                     },
                     fontFamily: {
@@ -59,7 +59,7 @@
     <!-- Navegación y Controles de Tema -->
     <nav class="bg-theme text-white shadow-md transition-colors duration-300 relative z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-serif font-bold tracking-tight">Smith Business Solutions</h1>
+            <h1 class="text-2xl font-serif font-bold tracking-tight">Panadería MiPan 2025 C.A.</h1>
             <div class="flex space-x-4">
                 <!-- Modo Oscuro -->
                 <button id="toggleDark" class="p-2 rounded hover:bg-black/20 transition" title="Alternar Modo Oscuro">
@@ -78,7 +78,7 @@
         
         <!-- Catálogo de Productos -->
         <section class="lg:col-span-2 space-y-6">
-            <h2 class="text-2xl font-serif font-semibold border-b pb-2 dark:border-gray-700">Nuestros Servicios</h2>
+            <h2 class="text-2xl font-serif font-semibold border-b pb-2 dark:border-gray-700">Nuestros Productos</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6" id="productContainer">
                 <!-- Los productos se inyectan vía JS -->
             </div>
@@ -99,7 +99,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">Comentario</label>
-                        <textarea required rows="3" class="w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 p-2 focus:ring focus:ring-opacity-50"></textarea>
+                        <textarea required rows="3" class="w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-700 p-2 focus:ring focus:ring-opacity-50" placeholder="¿Qué te parecieron nuestros panes y dulces?"></textarea>
                     </div>
                     <button type="submit" class="bg-theme hover-bg-theme text-white px-4 py-2 rounded-md transition-colors duration-300">
                         Enviar Reseña
@@ -121,7 +121,7 @@
 
             <div class="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3 text-sm">
                 <div class="flex justify-between items-center">
-                    <label for="bcvRate" class="font-medium text-gray-600 dark:text-gray-300 cursor-help" title="Configurable por el cliente/admin">Tasa BCV:</label>
+                    <label for="bcvRate" class="font-medium text-gray-600 dark:text-gray-300 cursor-help" title="Tasa oficial para conversiones">Tasa BCV:</label>
                     <div class="flex items-center">
                         <span class="mr-1">Bs.</span>
                         <input type="number" id="bcvRate" value="42.50" step="0.01" class="w-20 p-1 border rounded dark:bg-gray-700 dark:border-gray-600 text-right">
@@ -132,7 +132,7 @@
                     <span id="cartSubtotal" class="font-semibold">$0.00</span>
                 </div>
                 <div class="flex justify-between">
-                    <span>Delivery (Fijo):</span>
+                    <span>Delivery (Opcional):</span>
                     <span id="cartDelivery" class="font-semibold">$2.00</span>
                 </div>
                 <div class="border-t border-gray-200 dark:border-gray-700 my-2"></div>
@@ -150,14 +150,14 @@
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.099.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-3.825 3.113-6.937 6.937-6.937 3.82 0 6.933 3.115 6.934 6.938-.001 3.825-3.116 6.942-6.934 6.942z"/></svg>
                 Pedir vía WhatsApp
             </button>
-            <p class="text-xs text-center text-gray-500 mt-3">Al confirmar se generará su factura digital (Formato Texto).</p>
+            <p class="text-xs text-center text-gray-500 mt-3">Al confirmar se generará su factura digital de los productos.</p>
         </aside>
     </main>
 
     <!-- Footer & Modal Trigger -->
     <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-auto py-6 relative z-40">
         <div class="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500 dark:text-gray-400">
-            &copy; 2026 Smith Business Solutions. Todos los derechos reservados.
+            &copy; 2026 Panadería MiPan 2025 C.A. Todos los derechos reservados.
             <!-- Trigger Oculto Administrador (Doble click para abrir) -->
             <span id="adminTrigger" class="cursor-default select-none text-transparent ml-2" title="Área restringida">.</span>
         </div>
@@ -167,21 +167,22 @@
     <div id="adminModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm">
         <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl max-w-md w-full relative">
             <button id="closeAdmin" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 dark:hover:text-white">&times;</button>
-            <h2 class="text-2xl font-serif mb-4 text-gray-900 dark:text-white">Acceso Administrativo</h2>
+            <h2 class="text-2xl font-serif mb-4 text-gray-900 dark:text-white">Panel Administrativo</h2>
             <p class="text-sm text-gray-600 dark:text-gray-300 mb-6">Módulo de gestión de inventario y facturación.</p>
             <div class="space-y-4">
-                <input type="password" placeholder="Clave de acceso" class="w-full border-gray-300 rounded p-2 dark:bg-gray-700 dark:border-gray-600">
-                <button class="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition">Ingresar</button>
+                <input type="password" placeholder="PIN de acceso" class="w-full border-gray-300 rounded p-2 dark:bg-gray-700 dark:border-gray-600">
+                <button class="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition">Ingresar al Sistema</button>
             </div>
         </div>
     </div>
 
     <script>
-        /* === 1. Base de Datos Mockup === */
+        /* === 1. Base de Datos Mockup (Panadería) === */
         const products = [
-            { id: 1, name: "Consultoría Digital Básica", price: 25.00, desc: "Análisis inicial y presencia digital." },
-            { id: 2, name: "Desarrollo Web (Landing)", price: 150.00, desc: "Creación de página web corporativa (Webador/Personalizada)." },
-            { id: 3, name: "Integración AI & Automatización", price: 85.00, desc: "Implementación de herramientas de inteligencia artificial." }
+            { id: 1, name: "Pan Francés (Paquete 12 und)", price: 2.00, desc: "Recién salido del horno, crujiente por fuera y suave por dentro." },
+            { id: 2, name: "Cachitos de Jamón", price: 1.50, desc: "Tradicionales cachitos rellenos con jamón ahumado de primera." },
+            { id: 3, name: "Pan Dulce Andino", price: 3.00, desc: "Pan dulce típico andino, esponjoso y aromático." },
+            { id: 4, name: "Pan de Jamón (Temporada)", price: 15.00, desc: "Relleno de jamón ahumado, tocineta, aceitunas y pasas." }
         ];
 
         /* === 2. Lógica de Interfaz y Tema === */
@@ -353,11 +354,11 @@
         /* === 7. Integración WhatsApp (Factura Digital) === */
         document.getElementById('checkoutBtn').addEventListener('click', () => {
             if(cart.length === 0) {
-                alert("Agrega productos al carrito primero.");
+                alert("Agrega panes o dulces al carrito primero.");
                 return;
             }
 
-            let invoiceText = `*NUEVO PEDIDO - SMITH BUSINESS SOLUTIONS*\n\n`;
+            let invoiceText = `*NUEVO PEDIDO - PANADERÍA MIPAN 2025*\n\n`;
             let subtotal = 0;
             cart.forEach(item => {
                 invoiceText += `- ${item.qty}x ${item.name} ($${(item.price * item.qty).toFixed(2)})\n`;
@@ -370,10 +371,10 @@
             invoiceText += `\n*Subtotal:* $${subtotal.toFixed(2)}\n`;
             invoiceText += `*Delivery:* $${deliveryFee.toFixed(2)}\n`;
             invoiceText += `*TOTAL:* $${totalUSD.toFixed(2)} (Bs. ${totalVES.toFixed(2)})\n`;
-            invoiceText += `\nTasa calculada: Bs. ${bcvInput.value}\n`;
-            invoiceText += `_Generado automáticamente desde el Catálogo Digital_`;
+            invoiceText += `\nTasa BCV calculada: Bs. ${bcvInput.value}\n`;
+            invoiceText += `_Generado desde la App Web_`;
 
-            // Número WhatsApp de prueba (Formato internacional sin '+')
+            // Número WhatsApp oficial de la panadería (Formato internacional sin '+')
             const waNumber = '584120000000';
             const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(invoiceText)}`;
             window.open(waUrl, '_blank');
@@ -388,7 +389,7 @@
                 console.warn("Spam detectado y bloqueado.");
                 return;
             }
-            alert("¡Gracias por tu reseña! Ha sido enviada exitosamente.");
+            alert("¡Gracias por tu opinión! Nos ayuda a mejorar nuestros productos.");
             e.target.reset();
         });
 
