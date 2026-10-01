@@ -51,7 +51,9 @@
                 <div class="hidden md:flex space-x-8 items-center">
                     <a href="#" class="text-amber-900 dark:text-gray-200 hover:text-amber-600 dark:hover:text-amber-400 font-medium transition-colors">Inicio</a>
                     <a href="#sobre-la-tienda" class="text-gray-600 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 font-medium transition-colors">Nosotros</a>
-                    <a href="#catalogo" class="text-gray-600 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 font-medium transition-colors">Catálogo</a>
+                    
+                    <!-- Enlace directo al archivo catalogo.html -->
+                    <a href="catalogo.html" class="text-gray-600 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 font-medium transition-colors">Catálogo</a>
                     
                     <div class="flex items-center gap-4 border-l border-gray-200 dark:border-gray-700 pl-6 ml-2">
                         <!-- Theme Toggle -->
@@ -84,14 +86,16 @@
             <p class="text-gray-200 text-lg sm:text-xl mb-10 font-light max-w-2xl mx-auto drop-shadow-md">
                 Pan fresco, dulces tradicionales y repostería hecha con pasión cada mañana para tu familia.
             </p>
-            <a href="#catalogo" class="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold px-8 py-4 rounded-full shadow-lg hover:shadow-amber-600/30 transition-all duration-300 transform hover:-translate-y-1">
-                Ver Catálogo <i class="fa-solid fa-arrow-down"></i>
+            
+            <!-- Botón que envía directamente a catalogo.html -->
+            <a href="catalogo.html" class="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold px-8 py-4 rounded-full shadow-lg hover:shadow-amber-600/30 transition-all duration-300 transform hover:-translate-y-1">
+                Ir a la Tienda <i class="fa-solid fa-store"></i>
             </a>
         </div>
     </section>
 
     <!-- Sección: Sobre la Tienda -->
-    <section id="sobre-la-tienda" class="bg-white dark:bg-gray-900 border-b border-amber-200 dark:border-gray-800 py-16 px-4 sm:px-6 lg:px-8">
+    <section id="sobre-la-tienda" class="flex-1 bg-white dark:bg-gray-900 border-b border-amber-200 dark:border-gray-800 py-16 px-4 sm:px-6 lg:px-8">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-10">
             <div class="md:w-1/2 space-y-6">
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 text-xs font-bold tracking-wide">
@@ -115,24 +119,6 @@
         </div>
     </section>
 
-    <!-- Interactive Store & Catalog Section Integrado -->
-    <main id="catalogo" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full">
-        <!-- Section Title -->
-        <div class="mb-6">
-            <h3 class="font-serif text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-                Nuestros Productos
-            </h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                Explora nuestra selección completa de panadería y repostería artesanal directamente desde nuestro catálogo oficial.
-            </p>
-        </div>
-
-        <!-- Integración directa del archivo catalogo.html mediante iframe -->
-        <div class="w-full bg-transparent rounded-2xl overflow-hidden min-h-[800px] border border-gray-200 dark:border-gray-800 shadow-sm">
-            <iframe src="catalogo.html" title="Catálogo Completo MiPan 2025" class="w-full h-full min-h-[800px] border-0" loading="lazy" onload="this.style.height=(this.contentWindow.document.body.scrollHeight+50)+'px';"></iframe>
-        </div>
-    </main>
-
     <!-- Footer -->
     <footer class="bg-gray-900 dark:bg-black py-12 border-t border-gray-800 mt-auto text-gray-400">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
@@ -148,7 +134,9 @@
                 <ul class="space-y-2">
                     <li><a href="#" class="hover:text-amber-500 transition-colors">Inicio</a></li>
                     <li><a href="#sobre-la-tienda" class="hover:text-amber-500 transition-colors">Sobre Nosotros</a></li>
-                    <li><a href="#catalogo" class="hover:text-amber-500 transition-colors">Catálogo</a></li>
+                    
+                    <!-- Enlace directo al archivo catalogo.html en el Footer -->
+                    <li><a href="catalogo.html" class="hover:text-amber-500 transition-colors">Catálogo</a></li>
                 </ul>
             </div>
             <div>
@@ -169,10 +157,10 @@
         </div>
     </footer>
 
-    <!-- Scripts Centralizados -->
+    <!-- Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. Configuración del Tema (Dark/Light)
+            // Configuración del Tema (Dark/Light)
             const themeToggleBtn = document.getElementById('theme-toggle');
             const darkIcon = document.getElementById('theme-toggle-dark-icon');
             const lightIcon = document.getElementById('theme-toggle-light-icon');
@@ -188,7 +176,7 @@
                 }
             }
 
-            // Inicializar tema según preferencia
+            // Inicializar tema
             if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 htmlEl.classList.add('dark');
             } else {
@@ -207,7 +195,7 @@
                 updateThemeIcons();
             });
 
-            // 2. Lógica del Badge del Carrito
+            // Lógica del Badge del Carrito
             function updateCartBadge() {
                 const cart = JSON.parse(localStorage.getItem('mipan_cart')) || [];
                 const badge = document.getElementById('cart-badge');
@@ -225,7 +213,7 @@
             // Llamada inicial para cargar el badge
             updateCartBadge();
             
-            // Escuchar cambios de storage para actualizar la burbuja si el iframe modifica el carrito
+            // Escuchar cambios de storage por si se añade algo en otra pestaña
             window.addEventListener('storage', (e) => {
                 if(e.key === 'mipan_cart') {
                     updateCartBadge();
