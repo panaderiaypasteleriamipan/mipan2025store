@@ -34,19 +34,36 @@
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@700;900&display=swap" rel="stylesheet">
+    
+    <!-- Librería para generar PDF (Facturas) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans min-h-screen flex flex-col relative overflow-x-hidden">
+<!-- Fondo de Noche Navideño (Degradado Oscuro) -->
+<body class="bg-gradient-to-b from-blue-950 via-slate-900 to-black text-gray-100 font-sans min-h-screen flex flex-col relative overflow-x-hidden">
 
     <!-- Efecto de Nieve Ligero en el Fondo -->
     <canvas id="snowCanvas" class="fixed top-0 left-0 w-full h-full pointer-events-none z-0"></canvas>
 
     <!-- Header / Navbar -->
-    <header class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-classic-500/20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center relative z-10">
-            <h1 class="font-serif text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-classic-500 to-amber-400 tracking-tight drop-shadow-sm">mipan2025</h1>
-            <button class="relative p-2 text-gray-600 dark:text-gray-300 hover:text-classic-500 transition-colors">
+    <header class="bg-slate-900/80 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-classic-500/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap gap-3 justify-between items-center relative z-10">
+            
+            <div class="flex items-center gap-4">
+                <!-- Botón de Regreso al Inicio -->
+                <a href="index.html" class="text-gray-300 hover:text-white transition-colors bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Inicio
+                </a>
+                <h1 class="font-serif text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-classic-500 to-amber-400 tracking-tight drop-shadow-sm">mipan2025</h1>
+            </div>
+
+            <!-- Tasa BCV Display (API) -->
+            <div class="hidden sm:flex items-center text-xs text-amber-200 bg-black/30 px-3 py-1 rounded-full border border-amber-500/30">
+                <i class="fa-solid fa-sync fa-spin mr-2" id="bcvLoader"></i> Tasa BCV: <strong id="tasaBcvDisplay" class="ml-1">Cargando...</strong> Bs/$
+            </div>
+
+            <button onclick="toggleCart()" class="relative p-2 text-gray-300 hover:text-classic-500 transition-colors bg-white/5 rounded-full">
                 <i class="fa-solid fa-cart-shopping text-xl"></i>
-                <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-600 rounded-full shadow-lg">0</span>
+                <span id="cartCountBadge" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-600 rounded-full shadow-lg">0</span>
             </button>
         </div>
     </header>
@@ -57,10 +74,10 @@
         <!-- Título de Sección y Barra de Filtros -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
-                <h3 class="font-serif text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <h3 class="font-serif text-2xl sm:text-3xl font-bold text-white flex items-center gap-2 drop-shadow-lg">
                     <i class="fa-solid fa-crown text-classic-500 text-xl"></i> Catálogo Premium
                 </h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <p class="text-sm text-gray-300 mt-1">
                     Sincronizado en tiempo real con la administración de mipan2025.
                 </p>
             </div>
@@ -68,19 +85,19 @@
             <!-- Botones de Filtro -->
             <div id="categoryFilters" class="flex flex-wrap items-center gap-2">
                 <button onclick="filterCategory('todos', this)" class="cat-btn bg-classic-500 text-white border-classic-500 shadow-md px-4 py-2 rounded-full text-xs font-bold tracking-wide border transition-all">Todos</button>
-                <button onclick="filterCategory('panes', this)" class="cat-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all shadow-sm hover:shadow">🥖 Panes</button>
-                <button onclick="filterCategory('tortas_dulces', this)" class="cat-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all shadow-sm hover:shadow">🍰 Tortas y Dulces</button>
-                <button onclick="filterCategory('dulces_secos', this)" class="cat-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all shadow-sm hover:shadow">🍪 Dulces Secos</button>
-                <button onclick="filterCategory('navideno', this)" class="cat-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all shadow-sm hover:shadow">🎄 Especial Navideño</button>
-                <button onclick="filterCategory('viveres', this)" class="cat-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all shadow-sm hover:shadow">🥫 Víveres</button>
-                <button onclick="filterCategory('otros', this)" class="cat-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all shadow-sm hover:shadow">📦 Otros</button>
+                <button onclick="filterCategory('panes', this)" class="cat-btn bg-gray-800 text-gray-200 border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all shadow-sm hover:shadow">🥖 Panes</button>
+                <button onclick="filterCategory('tortas_dulces', this)" class="cat-btn bg-gray-800 text-gray-200 border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all shadow-sm hover:shadow">🍰 Tortas y Dulces</button>
+                <button onclick="filterCategory('dulces_secos', this)" class="cat-btn bg-gray-800 text-gray-200 border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all shadow-sm hover:shadow">🍪 Dulces Secos</button>
+                <button onclick="filterCategory('navideno', this)" class="cat-btn bg-gray-800 text-gray-200 border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all shadow-sm hover:shadow">🎄 Especial Navideño</button>
+                <button onclick="filterCategory('viveres', this)" class="cat-btn bg-gray-800 text-gray-200 border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all shadow-sm hover:shadow">🥫 Víveres</button>
+                <button onclick="filterCategory('otros', this)" class="cat-btn bg-gray-800 text-gray-200 border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all shadow-sm hover:shadow">📦 Otros</button>
             </div>
         </div>
 
         <!-- Barra de Búsqueda -->
         <div class="mb-8 w-full max-w-lg">
             <div class="relative w-full group">
-                <input type="text" oninput="handleSearch(this.value)" placeholder="Buscar en el catálogo exclusivo..." class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-sm focus:outline-none focus:ring-2 focus:ring-classic-500 shadow-sm transition-all group-hover:shadow-lg">
+                <input type="text" oninput="handleSearch(this.value)" placeholder="Buscar en el catálogo exclusivo..." class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-600 bg-gray-800/90 backdrop-blur-sm text-sm text-white focus:outline-none focus:ring-2 focus:ring-classic-500 shadow-sm transition-all group-hover:shadow-lg placeholder-gray-400">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-gray-400 group-focus-within:text-classic-500 transition-colors"></i>
             </div>
         </div>
@@ -92,59 +109,205 @@
 
     </main>
 
+    <!-- Modal de Carrito de Compras (Oculto por defecto) -->
+    <div id="cartModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex justify-end transition-opacity duration-300 opacity-0">
+        <div class="w-full max-w-md bg-slate-900 border-l border-classic-500/30 h-full shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300 overflow-y-auto" id="cartPanel">
+            
+            <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-slate-900 sticky top-0 z-10">
+                <h2 class="text-xl font-serif font-bold text-white flex items-center gap-2"><i class="fa-solid fa-cart-shopping text-classic-500"></i> Tu Pedido</h2>
+                <button onclick="toggleCart()" class="text-gray-400 hover:text-red-500 transition text-2xl">&times;</button>
+            </div>
+
+            <!-- Productos en el Carrito -->
+            <div class="flex-1 p-4 overflow-y-auto space-y-4" id="cartItemsContainer">
+                <!-- Inyectado por JS -->
+            </div>
+
+            <!-- Sección de Facturación y Datos -->
+            <div class="p-5 border-t border-gray-800 bg-slate-800/50 space-y-4">
+                
+                <!-- Resumen de Costos -->
+                <div class="text-sm space-y-2">
+                    <div class="flex justify-between text-gray-300">
+                        <span>Subtotal:</span>
+                        <span id="cartSubtotal">$0.00</span>
+                    </div>
+                    <div class="flex justify-between text-gray-300">
+                        <span>IVA (16% legal):</span>
+                        <span id="cartIva">$0.00</span>
+                    </div>
+                    <div class="flex justify-between text-xl font-black text-classic-500 mt-2 border-t border-gray-700 pt-2">
+                        <span>TOTAL USD:</span>
+                        <span id="cartTotalUsd">$0.00</span>
+                    </div>
+                    <div class="flex justify-between text-md font-bold text-amber-300">
+                        <span>Equivalente BCV:</span>
+                        <span id="cartTotalBs">Bs 0.00</span>
+                    </div>
+                </div>
+
+                <!-- Formulario de Datos para Factura y Delivery -->
+                <form id="checkoutForm" onsubmit="procesarPedido(event)" class="space-y-3 pt-4 border-t border-gray-700">
+                    <h3 class="text-sm font-bold text-gray-200 mb-2"><i class="fa-solid fa-truck"></i> Datos para Factura y Delivery</h3>
+                    <input type="text" id="chkNombre" required placeholder="Nombre Completo" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:ring-classic-500 focus:border-classic-500">
+                    <input type="tel" id="chkTelefono" required placeholder="WhatsApp (Ej: 04121234567)" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:ring-classic-500 focus:border-classic-500">
+                    <textarea id="chkDireccion" required placeholder="Dirección de Entrega (Delivery)" rows="2" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:ring-classic-500 focus:border-classic-500 resize-none"></textarea>
+                    
+                    <button type="submit" class="w-full mt-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold py-3 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02]">
+                        <i class="fa-brands fa-whatsapp text-xl"></i> Realizar Pedido
+                    </button>
+                    <p class="text-[10px] text-gray-400 text-center mt-2">* Serás redirigido a WhatsApp y se descargará tu Factura en PDF.</p>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor Oculto para Generación de Factura PDF -->
+    <div style="position: absolute; left: -9999px; top: 0;">
+        <div id="invoiceTemplate" class="bg-white text-black p-8 w-[800px] font-sans border-2 border-gray-200">
+            <!-- Cabecera Factura -->
+            <div class="flex justify-between items-start border-b-2 border-gray-800 pb-4 mb-4">
+                <div>
+                    <h1 class="text-3xl font-black text-classic-600 font-serif">MiPan 2025 C.A.</h1>
+                    <p class="text-sm font-bold mt-1">RIF: J-50000000-0</p>
+                    <p class="text-sm">Av. Pedro Russo Ferrer, C.C. Los Teques</p>
+                    <p class="text-sm">Estado Miranda, Venezuela</p>
+                    <p class="text-sm">WhatsApp: +58 416-2214657</p>
+                </div>
+                <div class="text-right">
+                    <h2 class="text-2xl font-bold text-gray-800 uppercase tracking-widest">Factura</h2>
+                    <p class="text-sm font-bold mt-1 text-red-600">N° Orden: <span id="invOrderNum"></span></p>
+                    <p class="text-sm font-bold">Fecha: <span id="invDate"></span></p>
+                    <p class="text-sm">Tasa BCV: Bs <span id="invBcvRate"></span></p>
+                </div>
+            </div>
+            <!-- Datos Cliente -->
+            <div class="bg-gray-100 p-4 rounded mb-6 border border-gray-300">
+                <h3 class="font-bold text-sm uppercase mb-2 border-b border-gray-300 pb-1">Datos del Cliente</h3>
+                <p class="text-sm"><strong>Nombre / Razón Social:</strong> <span id="invName"></span></p>
+                <p class="text-sm"><strong>Teléfono:</strong> <span id="invPhone"></span></p>
+                <p class="text-sm"><strong>Dirección de Entrega:</strong> <span id="invAddress"></span></p>
+            </div>
+            <!-- Tabla de Productos -->
+            <table class="w-full text-sm mb-6 border-collapse">
+                <thead>
+                    <tr class="bg-gray-800 text-white">
+                        <th class="p-2 text-left border border-gray-800">Cant.</th>
+                        <th class="p-2 text-left border border-gray-800">Descripción del Producto</th>
+                        <th class="p-2 text-right border border-gray-800">Precio Unit. (USD)</th>
+                        <th class="p-2 text-right border border-gray-800">Subtotal (USD)</th>
+                    </tr>
+                </thead>
+                <tbody id="invItemsBody">
+                    <!-- Filas inyectadas -->
+                </tbody>
+            </table>
+            <!-- Totales -->
+            <div class="flex justify-end">
+                <div class="w-1/2">
+                    <table class="w-full text-sm font-bold">
+                        <tr>
+                            <td class="p-2 text-right border-t border-gray-300">Subtotal Exento/Base:</td>
+                            <td class="p-2 text-right border-t border-gray-300 w-32" id="invSubtotal">$0.00</td>
+                        </tr>
+                        <tr>
+                            <td class="p-2 text-right">IVA (16%):</td>
+                            <td class="p-2 text-right" id="invIva">$0.00</td>
+                        </tr>
+                        <tr class="text-lg text-classic-600">
+                            <td class="p-2 text-right border-t-2 border-gray-800">TOTAL FACTURA (USD):</td>
+                            <td class="p-2 text-right border-t-2 border-gray-800" id="invTotalUsd">$0.00</td>
+                        </tr>
+                        <tr class="text-md text-gray-600">
+                            <td class="p-2 text-right">EQUIVALENTE (Bs):</td>
+                            <td class="p-2 text-right" id="invTotalBs">Bs 0.00</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="mt-12 pt-4 border-t border-gray-300 text-center text-xs text-gray-500">
+                Documento emitido electrónicamente sin tachaduras ni enmendaduras. Gracias por su compra en Panadería MiPan 2025.
+            </div>
+        </div>
+    </div>
+
     <!-- Developer ADS Banner (Unobtrusive) -->
-    <div class="relative z-10 w-full bg-transparent py-4 border-t border-gray-200 dark:border-gray-800/50 mt-8">
+    <div class="relative z-10 w-full bg-transparent py-4 border-t border-gray-800/50 mt-8">
         <div class="max-w-7xl mx-auto px-4 flex flex-col items-center justify-center text-center opacity-60 hover:opacity-100 transition-opacity duration-300">
-            <p class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest font-semibold">
+            <p class="text-[10px] sm:text-xs text-gray-400 uppercase tracking-widest font-semibold">
                 Desarrollo de Software Premium & E-Commerce
             </p>
             <div class="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 mt-1">
-                <span class="font-black text-classic-500 text-xs sm:text-sm tracking-wide">AL HADIQA INVEST</span>
-                <span class="hidden sm:inline text-gray-400">|</span>
-                <span class="text-xs text-gray-500 dark:text-gray-400">Arquitectura de programación: <strong class="text-gray-700 dark:text-gray-300 font-mono">smith bussines solutions 2026</strong></span>
+                <span class="font-black text-classic-500 text-xs sm:text-sm tracking-wide drop-shadow-md">AL HADIQA INVEST</span>
+                <span class="hidden sm:inline text-gray-600">|</span>
+                <span class="text-xs text-gray-400">Arquitectura de programación: <strong class="text-gray-300 font-mono">smith bussines solutions 2026</strong></span>
             </div>
         </div>
     </div>
 
     <!-- Footer -->
-    <footer class="bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 mt-auto relative z-10">
+    <footer class="bg-slate-900/90 backdrop-blur-md border-t border-gray-800 mt-auto relative z-10">
         <div class="max-w-7xl mx-auto px-4 py-6 text-center text-sm text-gray-500 font-medium">
-            &copy; 2026 mipan2025. Sistema de Catálogo Integrado.
+            &copy; 2026 mipan2025. Sistema de Catálogo y Facturación Integrado.
         </div>
     </footer>
 
     <!-- Lógica de Funcionamiento -->
     <script>
-        // === Motor de Animación de Nieve (Background) ===
+        // === Variables de Estado Global ===
+        let bcvRate = 35.00; // Valor por defecto en caso de falla
+        let cartItems = [];
+        const TASA_IVA = 0.16; // 16% IVA Venezuela
+        const WHATSAPP_NUM = "584162214657"; 
+
+        // === Fetch API Dólar BCV ===
+        async function fetchBcvRate() {
+            try {
+                const res = await fetch('https://ve.dolarapi.com/v1/dolares/oficial');
+                const data = await res.json();
+                if(data && data.promedio) {
+                    bcvRate = parseFloat(data.promedio);
+                    document.getElementById('tasaBcvDisplay').innerText = bcvRate.toFixed(2);
+                    document.getElementById('bcvLoader').classList.add('hidden');
+                    updateCartUI(); // Actualizar totales si hay cosas en carrito
+                }
+            } catch (error) {
+                console.warn("Fallo API BCV, usando default", error);
+                document.getElementById('tasaBcvDisplay').innerText = bcvRate.toFixed(2) + " (Ref)";
+                document.getElementById('bcvLoader').classList.add('hidden');
+            }
+        }
+
+        // === Motor de Animación de Nieve (Background Mejorado para Noche) ===
         function initSnow() {
             const canvas = document.getElementById('snowCanvas');
             const ctx = canvas.getContext('2d');
             let w = canvas.width = window.innerWidth;
             let h = canvas.height = window.innerHeight;
 
-            // Escuchar resize
             window.addEventListener('resize', () => {
                 w = canvas.width = window.innerWidth;
                 h = canvas.height = window.innerHeight;
             });
 
             const particles = [];
-            const particleCount = 60; // Cantidad ligera para no afectar rendimiento
+            const particleCount = 80; 
 
             for (let i = 0; i < particleCount; i++) {
                 particles.push({
                     x: Math.random() * w,
                     y: Math.random() * h,
-                    r: Math.random() * 3 + 1, // Radio
-                    d: Math.random() * particleCount, // Densidad
-                    speedY: Math.random() * 1 + 0.5,
+                    r: Math.random() * 2.5 + 0.5, 
+                    d: Math.random() * particleCount, 
+                    speedY: Math.random() * 1 + 0.3,
                     speedX: Math.random() * 1 - 0.5
                 });
             }
 
             function draw() {
                 ctx.clearRect(0, 0, w, h);
-                ctx.fillStyle = 'rgba(200, 200, 200, 0.4)'; // Color adaptable
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'; // Nieve más blanca para la noche
                 ctx.beginPath();
                 for (let i = 0; i < particleCount; i++) {
                     const p = particles[i];
@@ -170,13 +333,11 @@
             draw();
         }
 
-        // 1. Consumo EXCLUSIVO de datos provenientes de admin.html
-        // Inicia como un array vacío si admin.html no ha guardado nada aún
+        // === Base de Datos y Filtros del Catálogo ===
         let products = JSON.parse(localStorage.getItem('mipan_products')) || [];
         let currentCategory = 'todos';
         let searchQuery = '';
 
-        // Escuchar cambios en otras pestañas (por si admin.html guarda datos mientras esta pestaña está abierta)
         window.addEventListener('storage', function(e) {
             if (e.key === 'mipan_products') {
                 products = JSON.parse(e.newValue) || [];
@@ -184,41 +345,33 @@
             }
         });
 
-        // 2. Función optimizada para filtrado visual de categorías
         function filterCategory(cat, btnElement) {
             currentCategory = cat;
             
-            // Reseteo de clases visuales en todos los botones
             const buttons = document.querySelectorAll('.cat-btn');
             buttons.forEach(btn => {
                 btn.classList.remove('bg-classic-500', 'text-white', 'border-classic-500', 'shadow-md');
-                btn.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-200', 'border-gray-300', 'dark:border-gray-700');
+                btn.classList.add('bg-gray-800', 'text-gray-200', 'border-gray-700');
             });
 
-            // Activar visualmente el botón seleccionado
             if(btnElement) {
-                btnElement.classList.remove('bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-200', 'border-gray-300', 'dark:border-gray-700');
+                btnElement.classList.remove('bg-gray-800', 'text-gray-200', 'border-gray-700');
                 btnElement.classList.add('bg-classic-500', 'text-white', 'border-classic-500', 'shadow-md');
             }
-
             renderProducts();
         }
 
-        // 3. Función de búsqueda por texto
         function handleSearch(query) {
             searchQuery = query.toLowerCase().trim();
             renderProducts();
         }
 
-        // 4. Motor de Renderizado en el DOM (Actualizado a Diseño Premium)
         function renderProducts() {
             const grid = document.getElementById('productGrid');
-            grid.innerHTML = ''; // Limpiar grilla
+            grid.innerHTML = ''; 
 
-            // Aplicar filtros concurrentes (Categoría + Búsqueda)
             const filteredProducts = products.filter(p => {
                 const matchCategory = currentCategory === 'todos' || p.category === currentCategory;
-                // Prevenir errores si alguna propiedad no existe
                 const productName = p.name ? p.name.toLowerCase() : '';
                 const productDesc = p.desc ? p.desc.toLowerCase() : '';
                 
@@ -226,52 +379,45 @@
                 return matchCategory && matchSearch;
             });
 
-            // Manejo de estado vacío (cuando no hay productos de admin.html o no coinciden con la búsqueda)
             if (filteredProducts.length === 0) {
                 grid.innerHTML = `
-                    <div class="col-span-full py-16 flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-dashed border-gray-300 dark:border-gray-600">
+                    <div class="col-span-full py-16 flex flex-col items-center justify-center text-gray-400 bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-dashed border-gray-600">
                         <i class="fa-solid fa-gem text-5xl mb-4 text-classic-500 opacity-60"></i>
-                        <p class="text-xl font-serif font-bold text-gray-700 dark:text-gray-200">Catálogo en preparación</p>
-                        <p class="text-sm mt-2 text-center max-w-md">Los productos exclusivos agregados desde la administración de mipan2025 aparecerán aquí muy pronto.</p>
+                        <p class="text-xl font-serif font-bold text-gray-200">Catálogo en preparación</p>
+                        <p class="text-sm mt-2 text-center max-w-md">Los productos exclusivos agregados desde la administración aparecerán aquí.</p>
                     </div>
                 `;
                 return;
             }
 
-            // Inyección de tarjetas HTML basadas en los datos de admin.html (Diseño Premium)
             filteredProducts.forEach(p => {
-                const imgPlaceholder = 'https://via.placeholder.com/600x400?text=Sin+Imagen+Premium';
-                // Usamos la imagen en Base64 o URL que venga de admin.html, o un placeholder si no tiene
+                const imgPlaceholder = 'https://via.placeholder.com/600x400/1e293b/d97706?text=Sin+Imagen+Premium';
                 const imageSrc = p.image || p.fallbackImg || imgPlaceholder; 
                 
                 const card = document.createElement('div');
-                // Nuevas clases de diseño Premium
-                card.className = 'relative bg-white/80 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-classic-500/20 dark:border-classic-500/30 flex flex-col group transform hover:-translate-y-2';
+                card.className = 'relative bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-lg hover:shadow-[0_10px_30px_rgba(217,119,6,0.15)] transition-all duration-500 overflow-hidden border border-classic-500/30 flex flex-col group transform hover:-translate-y-2';
                 
                 card.innerHTML = `
-                    <div class="aspect-w-4 aspect-h-3 w-full overflow-hidden bg-gradient-to-tr from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-900 relative">
-                        <!-- Destello superior premium -->
-                        <div class="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-black/20 to-transparent z-10"></div>
-                        
+                    <div class="aspect-w-4 aspect-h-3 w-full overflow-hidden bg-gray-900 relative">
+                        <div class="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-black/50 to-transparent z-10"></div>
                         <img src="${imageSrc}" alt="${p.name}" class="w-full h-56 object-cover object-center group-hover:scale-110 transition-transform duration-700 relative z-0">
-                        
                         ${p.stock <= 0 ? `
                         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-20">
-                            <span class="text-white font-black px-4 py-1.5 border-2 border-red-500 bg-red-600/80 rounded-full text-sm uppercase tracking-widest shadow-[0_0_15px_rgba(220,38,38,0.5)]">Agotado</span>
+                            <span class="text-white font-black px-4 py-1.5 border-2 border-red-500 bg-red-600/80 rounded-full text-sm uppercase tracking-widest">Agotado</span>
                         </div>` : ''}
                     </div>
                     <div class="p-6 flex flex-col flex-1 relative z-10">
                         <div class="flex justify-between items-start mb-3">
-                            <h4 class="text-xl font-serif font-black text-gray-900 dark:text-white leading-tight group-hover:text-classic-500 transition-colors">${p.name}</h4>
+                            <h4 class="text-xl font-serif font-black text-white leading-tight group-hover:text-classic-500 transition-colors">${p.name}</h4>
                         </div>
-                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-5 flex-1 line-clamp-3 leading-relaxed">${p.desc || 'Obra maestra de repostería sin descripción detallada.'}</p>
+                        <p class="text-sm text-gray-300 mb-5 flex-1 line-clamp-3 leading-relaxed">${p.desc || 'Obra maestra de repostería.'}</p>
                         
-                        <div class="flex items-end justify-between mt-auto pt-4 border-t border-classic-500/10 dark:border-gray-700">
+                        <div class="flex items-end justify-between mt-auto pt-4 border-t border-gray-700">
                             <div>
-                                <span class="block text-[10px] uppercase tracking-widest text-classic-500 font-bold mb-1">Precio Especial</span>
-                                <span class="text-2xl font-black text-gray-900 dark:text-white drop-shadow-sm">$${parseFloat(p.priceUsd || 0).toFixed(2)}</span>
+                                <span class="block text-[10px] uppercase tracking-widest text-classic-500 font-bold mb-1">Ref USD</span>
+                                <span class="text-2xl font-black text-white drop-shadow-sm">$${parseFloat(p.priceUsd || 0).toFixed(2)}</span>
                             </div>
-                            <button onclick="añadirAlCarrito('${p.id}')" ${p.stock <= 0 ? 'disabled' : ''} title="Agregar al carrito" class="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${p.stock > 0 ? 'bg-gradient-to-tr from-classic-600 to-classic-500 hover:from-amber-500 hover:to-classic-400 text-white shadow-[0_4px_15px_rgba(217,119,6,0.4)] hover:shadow-[0_6px_20px_rgba(217,119,6,0.6)] transform hover:rotate-12' : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed border border-gray-300 dark:border-gray-600'}">
+                            <button onclick="añadirAlCarrito('${p.id}')" ${p.stock <= 0 ? 'disabled' : ''} class="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${p.stock > 0 ? 'bg-gradient-to-tr from-classic-600 to-classic-500 hover:from-amber-500 hover:to-classic-400 text-white shadow-[0_4px_15px_rgba(217,119,6,0.4)] hover:shadow-[0_6px_20px_rgba(217,119,6,0.6)] transform hover:rotate-12' : 'bg-gray-700 text-gray-500 cursor-not-allowed border border-gray-600'}">
                                 <i class="fa-solid fa-cart-plus text-lg"></i>
                             </button>
                         </div>
@@ -281,21 +427,224 @@
             });
         }
 
-        // 5. Simulación de añadir al carrito
-        function añadirAlCarrito(id) {
-            const producto = products.find(p => p.id === id);
-            if(producto) {
-                // Efecto visual simple para el badge del carrito
-                const cartBadge = document.querySelector('header span');
-                let count = parseInt(cartBadge.innerText);
-                cartBadge.innerText = count + 1;
-                cartBadge.classList.add('animate-ping');
-                setTimeout(() => cartBadge.classList.remove('animate-ping'), 400);
+        // === Lógica del Carrito de Compras ===
+        function toggleCart() {
+            const modal = document.getElementById('cartModal');
+            const panel = document.getElementById('cartPanel');
+            
+            if(modal.classList.contains('hidden')){
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    panel.classList.remove('translate-x-full');
+                }, 10);
+            } else {
+                modal.classList.add('opacity-0');
+                panel.classList.add('translate-x-full');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
             }
         }
 
-        // Inicializar la vista al cargar el documento
+        function añadirAlCarrito(id) {
+            const product = products.find(p => p.id === id);
+            if(!product) return;
+
+            const existingItem = cartItems.find(item => item.id === id);
+            if(existingItem) {
+                existingItem.qty++;
+            } else {
+                cartItems.push({...product, qty: 1});
+            }
+            
+            // Animación del Icono header
+            const cartBadge = document.getElementById('cartCountBadge');
+            cartBadge.classList.add('animate-ping');
+            setTimeout(() => cartBadge.classList.remove('animate-ping'), 400);
+
+            updateCartUI();
+            
+            // Si el modal está cerrado, lo abrimos brevemente o solo actualizamos.
+            // Para mejor UX, podríamos abrirlo, pero lo dejaremos así y actualizaremos.
+        }
+
+        function modificarCantidad(id, delta) {
+            const item = cartItems.find(item => item.id === id);
+            if(item) {
+                item.qty += delta;
+                if(item.qty <= 0) {
+                    cartItems = cartItems.filter(i => i.id !== id);
+                }
+                updateCartUI();
+            }
+        }
+
+        function updateCartUI() {
+            const container = document.getElementById('cartItemsContainer');
+            const badge = document.getElementById('cartCountBadge');
+            
+            // Contar total items
+            const totalQty = cartItems.reduce((sum, item) => sum + item.qty, 0);
+            badge.innerText = totalQty;
+
+            container.innerHTML = '';
+            
+            if(cartItems.length === 0){
+                container.innerHTML = '<div class="text-center text-gray-500 mt-10"><i class="fa-solid fa-basket-shopping text-4xl mb-3 opacity-50"></i><p>Tu carrito está vacío.</p></div>';
+                document.getElementById('cartSubtotal').innerText = '$0.00';
+                document.getElementById('cartIva').innerText = '$0.00';
+                document.getElementById('cartTotalUsd').innerText = '$0.00';
+                document.getElementById('cartTotalBs').innerText = 'Bs 0.00';
+                return;
+            }
+
+            let subtotal = 0;
+
+            cartItems.forEach(item => {
+                const itemPrice = parseFloat(item.priceUsd || 0);
+                const itemTotal = itemPrice * item.qty;
+                subtotal += itemTotal;
+
+                container.innerHTML += `
+                    <div class="flex items-center gap-3 bg-gray-800/50 p-3 rounded-xl border border-gray-700">
+                        <img src="${item.image || item.fallbackImg || 'https://via.placeholder.com/150'}" class="w-16 h-16 object-cover rounded-lg border border-gray-600">
+                        <div class="flex-1">
+                            <h4 class="text-sm font-bold text-white leading-tight">${item.name}</h4>
+                            <div class="text-classic-500 font-black text-sm">$${itemPrice.toFixed(2)}</div>
+                        </div>
+                        <div class="flex flex-col items-center gap-1 bg-gray-900 rounded-lg border border-gray-700 p-1">
+                            <button type="button" onclick="modificarCantidad('${item.id}', 1)" class="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-white hover:bg-gray-700 rounded"><i class="fa-solid fa-plus text-xs"></i></button>
+                            <span class="text-xs font-bold w-6 text-center text-white">${item.qty}</span>
+                            <button type="button" onclick="modificarCantidad('${item.id}', -1)" class="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-white hover:bg-gray-700 rounded"><i class="fa-solid fa-minus text-xs"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const iva = subtotal * TASA_IVA;
+            const totalUsd = subtotal + iva;
+            const totalBs = totalUsd * bcvRate;
+
+            document.getElementById('cartSubtotal').innerText = `$${subtotal.toFixed(2)}`;
+            document.getElementById('cartIva').innerText = `$${iva.toFixed(2)}`;
+            document.getElementById('cartTotalUsd').innerText = `$${totalUsd.toFixed(2)}`;
+            document.getElementById('cartTotalBs').innerText = `Bs ${totalBs.toFixed(2)}`;
+        }
+
+        // === Procesamiento de Pedido (Factura PDF + WhatsApp) ===
+        function procesarPedido(e) {
+            e.preventDefault();
+            if(cartItems.length === 0) {
+                alert("Agrega productos al carrito antes de realizar el pedido.");
+                return;
+            }
+
+            const nombre = document.getElementById('chkNombre').value.trim();
+            const telefono = document.getElementById('chkTelefono').value.trim();
+            const direccion = document.getElementById('chkDireccion').value.trim();
+            
+            const numOrden = Math.floor(Math.random() * 90000) + 10000;
+            const fecha = new Date().toLocaleDateString('es-VE');
+
+            // 1. Preparar DOM de Factura Oculta
+            document.getElementById('invOrderNum').innerText = numOrden;
+            document.getElementById('invDate').innerText = fecha;
+            document.getElementById('invBcvRate').innerText = bcvRate.toFixed(2);
+            document.getElementById('invName').innerText = nombre;
+            document.getElementById('invPhone').innerText = telefono;
+            document.getElementById('invAddress').innerText = direccion;
+
+            const tbody = document.getElementById('invItemsBody');
+            tbody.innerHTML = '';
+            
+            let subtotal = 0;
+            let wpItemsText = '';
+
+            cartItems.forEach(item => {
+                const itemPrice = parseFloat(item.priceUsd || 0);
+                const itemTotal = itemPrice * item.qty;
+                subtotal += itemTotal;
+                
+                // Tr para PDF
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="p-2 border-b border-gray-300">${item.qty}</td>
+                        <td class="p-2 border-b border-gray-300">${item.name}</td>
+                        <td class="p-2 border-b border-gray-300 text-right">$${itemPrice.toFixed(2)}</td>
+                        <td class="p-2 border-b border-gray-300 text-right">$${itemTotal.toFixed(2)}</td>
+                    </tr>
+                `;
+
+                // String para WhatsApp
+                wpItemsText += `▫️ ${item.qty}x ${item.name} ($${itemPrice.toFixed(2)}) = *$${itemTotal.toFixed(2)}*\n`;
+            });
+
+            const iva = subtotal * TASA_IVA;
+            const totalUsd = subtotal + iva;
+            const totalBs = totalUsd * bcvRate;
+
+            document.getElementById('invSubtotal').innerText = `$${subtotal.toFixed(2)}`;
+            document.getElementById('invIva').innerText = `$${iva.toFixed(2)}`;
+            document.getElementById('invTotalUsd').innerText = `$${totalUsd.toFixed(2)}`;
+            document.getElementById('invTotalBs').innerText = `Bs ${totalBs.toFixed(2)}`;
+
+            // 2. Generar String de WhatsApp (Formato Factura para la Empresa)
+            const waText = `*MIPAN 2025 - NUEVA ORDEN # ${numOrden}* 🧾\n\n` +
+                           `*DATOS DEL CLIENTE*\n` +
+                           `👤 Nombre: ${nombre}\n` +
+                           `📞 Teléfono: ${telefono}\n` +
+                           `📍 Dirección Delivery: ${direccion}\n\n` +
+                           `*DETALLE DEL PEDIDO*\n` +
+                           `${wpItemsText}\n` +
+                           `*Subtotal:* $${subtotal.toFixed(2)}\n` +
+                           `*IVA (16%):* $${iva.toFixed(2)}\n` +
+                           `*TOTAL FACTURA:* *$${totalUsd.toFixed(2)}*\n` +
+                           `*EQUIVALENTE BS:* *Bs ${totalBs.toFixed(2)}* (Tasa: ${bcvRate.toFixed(2)})\n\n` +
+                           `_Orden generada vía Catálogo Web._`;
+
+            const waUrl = `https://wa.me/${WHATSAPP_NUM}?text=${encodeURIComponent(waText)}`;
+
+            // 3. Generar y Descargar PDF con html2pdf, luego abrir WhatsApp
+            const element = document.getElementById('invoiceTemplate');
+            const opt = {
+                margin:       10,
+                filename:     `Factura_MiPan_${numOrden}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Cambiamos el texto del botón temporalmente
+            const btnSubmit = document.querySelector('#checkoutForm button[type="submit"]');
+            const originalBtnHtml = btnSubmit.innerHTML;
+            btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xl"></i> Procesando Factura...';
+            btnSubmit.disabled = true;
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Restaurar botón y limpiar carrito
+                btnSubmit.innerHTML = originalBtnHtml;
+                btnSubmit.disabled = false;
+                
+                cartItems = [];
+                updateCartUI();
+                toggleCart();
+                document.getElementById('checkoutForm').reset();
+
+                // Abrir WhatsApp en nueva pestaña
+                window.open(waUrl, '_blank');
+            }).catch(err => {
+                console.error("Error generando PDF:", err);
+                alert("Hubo un problema generando la factura, pero te redirigiremos a WhatsApp.");
+                window.open(waUrl, '_blank');
+                btnSubmit.innerHTML = originalBtnHtml;
+                btnSubmit.disabled = false;
+            });
+        }
+
+        // Inicializar
         document.addEventListener('DOMContentLoaded', () => {
+            fetchBcvRate();
             initSnow();
             renderProducts();
         });
