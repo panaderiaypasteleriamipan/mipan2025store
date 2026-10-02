@@ -46,7 +46,7 @@
             </a>
             
             <!-- Enlace: Catálogos para previsualización -->
-            <a href="index.html#catalogo" target="_blank" class="block px-4 py-3 hover:bg-gray-800 rounded-lg text-sm font-semibold flex items-center gap-3 transition">
+            <a href="index.html#catalogo" class="block px-4 py-3 hover:bg-gray-800 rounded-lg text-sm font-semibold flex items-center gap-3 transition">
                 <i class="fa-solid fa-book-open"></i> Catálogos (Previsualización)
             </a>
         </nav>
@@ -85,11 +85,16 @@
                         </tr>
                     </thead>
                     <tbody id="inventoryTable" class="divide-y divide-gray-100 text-sm">
-                        <!-- Los productos se cargarán aquí por JS -->
+                        <!-- Los productos se cargarán aquí por JS de forma optimizada -->
                     </tbody>
                 </table>
             </div>
         </div>
+
+        <!-- Footer ADS - Datos de Programador -->
+        <footer class="bg-white bg-opacity-95 border-t border-gray-200 p-3 text-center text-xs text-gray-500 font-semibold shadow-inner backdrop-blur-sm">
+            <span class="text-brand-600 font-bold">ADS:</span> Sistema optimizado y desarrollado por <span class="text-gray-800">Carlos Smith Zambrano González</span>
+        </footer>
     </main>
 
     <!-- Modal Formulario de Producto (Crear / Editar) -->
@@ -209,42 +214,40 @@
             renderTable();
         });
 
-        // --- Renderizar Tabla ---
+        // --- Renderizar Tabla (Optimizado mediante mapeo en cadena) ---
         function renderTable() {
             const tbody = document.getElementById('inventoryTable');
-            tbody.innerHTML = '';
-
-            if(products.length === 0){
+            
+            if (products.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" class="text-center p-6 text-gray-500">No hay productos en el inventario.</td></tr>`;
                 return;
             }
 
-            products.forEach(p => {
+            // Inserción masiva optimizada (minimiza los reflows del DOM)
+            tbody.innerHTML = products.map(p => {
                 const priceBs = (p.priceUsd * bcvRate).toFixed(2);
-                let stockClass = p.stock > 5 ? 'bg-emerald-100 text-emerald-800' : (p.stock > 0 ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800');
-                
-                // Asegurar que la ruta base es la carpeta inventario si no la tiene
+                const stockClass = p.stock > 5 ? 'bg-emerald-100 text-emerald-800' : (p.stock > 0 ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800');
                 const imgSrc = p.image.includes('inventario/') ? p.image : `inventario/${p.image}`;
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="p-3 text-center">
-                        <img src="${imgSrc}" onerror="this.src='https://via.placeholder.com/150?text=Sin+Foto'" class="w-12 h-12 rounded-lg object-cover border border-gray-200 mx-auto shadow-sm">
-                    </td>
-                    <td class="p-3 font-semibold text-gray-800">${p.name}</td>
-                    <td class="p-3 text-gray-500 capitalize">${p.category}</td>
-                    <td class="p-3 text-right font-bold text-emerald-600">$${p.priceUsd.toFixed(2)}</td>
-                    <td class="p-3 text-right text-gray-600">Bs. ${priceBs}</td>
-                    <td class="p-3 text-center">
-                        <span class="px-2.5 py-1 rounded-full text-xs font-bold ${stockClass}">${p.stock}</span>
-                    </td>
-                    <td class="p-3 text-center space-x-2">
-                        <button onclick="editProduct('${p.id}')" class="text-blue-500 hover:bg-blue-50 p-2 rounded-lg transition" title="Editar"><i class="fa-solid fa-pen"></i></button>
-                        <button onclick="deleteProduct('${p.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded-lg transition" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
-                    </td>
+                return `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="p-3 text-center">
+                            <img src="${imgSrc}" onerror="this.src='https://via.placeholder.com/150?text=Sin+Foto'" class="w-12 h-12 rounded-lg object-cover border border-gray-200 mx-auto shadow-sm">
+                        </td>
+                        <td class="p-3 font-semibold text-gray-800">${p.name}</td>
+                        <td class="p-3 text-gray-500 capitalize">${p.category}</td>
+                        <td class="p-3 text-right font-bold text-emerald-600">$${p.priceUsd.toFixed(2)}</td>
+                        <td class="p-3 text-right text-gray-600">Bs. ${priceBs}</td>
+                        <td class="p-3 text-center">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-bold ${stockClass}">${p.stock}</span>
+                        </td>
+                        <td class="p-3 text-center space-x-2">
+                            <button onclick="editProduct('${p.id}')" class="text-blue-500 hover:bg-blue-50 p-2 rounded-lg transition" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteProduct('${p.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded-lg transition" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
                 `;
-                tbody.appendChild(tr);
-            });
+            }).join('');
         }
 
         // --- Manejo del Modal y Formulario ---
