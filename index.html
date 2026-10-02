@@ -167,7 +167,7 @@
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
             <div class="flex items-center gap-2" title="Actualización automática vía API">
                 <span class="bg-amber-400 text-gray-900 font-bold px-2 py-0.5 rounded text-xs animate-pulse flex items-center gap-1">
-                    <i id="bcvSyncIcon" class="fa-solid fa-rotate animate-spin-slow"></i> BCV OFICIAL
+                    <i id="bcvSyncIcon" class="fa-solid fa-rotate"></i> BCV OFICIAL
                 </span>
                 <span>Tasa de cambio: <strong id="bcvRateDisplay">--</strong> Bs/$</span>
             </div>
@@ -485,4 +485,330 @@
         // Sample Customer Reviews
         const DEFAULT_REVIEWS = [
             { author: 'Carmen V.', rating: 5, text: '¡El Pan de Jamón es increíble! La masa súper suave y abundante relleno. Súper recomendado en Los Teques.', date: '2025-11-10' },
-            { author: 'Roberto M.', rating: 5, text```
+            { author: 'Roberto M.', rating: 5, text: 'Los golfeados y cachitos son exquisitos. La atención por WhatsApp fue rapidísima.', date: '2025-11-15' },
+            { author: 'Elena P.', rating: 5, text: 'Pedí una torta para un cumpleaños y superó mis expectativas. 100% artesanales.', date: '2025-12-01' }
+        ];
+
+        // State & LocalStorage Keys
+        let reviews = JSON.parse(localStorage.getItem('mipan_reviews')) || DEFAULT_REVIEWS;
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            initFormTimestamp();
+            renderReviews();
+            fetchBcvRate();
+            initDarkMode();
+            initSeasonTheme();
+            initSnowEffect();
+            initNetworkListener();
+            initPWA();
+        });
+
+        // Honeypot Timestamp Initializer
+        function initFormTimestamp() {
+            const tsInput = document.getElementById('formTimestamp');
+            if (tsInput) tsInput.value = Date.now();
+        }
+
+        // Render Reviews List
+        function renderReviews() {
+            const container = document.getElementById('reviewsList');
+            if (!container) return;
+
+            container.innerHTML = reviews.map(rev => `
+                <div class="bg-white dark:bg-gray-900 p-4 rounded-xl border border-amber-100 dark:border-gray-800 shadow-sm transition hover:shadow-md">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="font-bold text-sm text-gray-900 dark:text-white">${escapeHtml(rev.author)}</span>
+                        <span class="text-xs text-amber-500 font-bold">${'★'.repeat(rev.rating)}${'☆'.repeat(5 - rev.rating)}</span>
+                    </div>
+                    <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">${escapeHtml(rev.text)}</p>
+                    <span class="text-[10px] text-gray-400 block">${escapeHtml(rev.date || 'Reciente')}</span>
+                </div>
+            `).join('');
+        }
+
+        // Handle Review Submission (with Honeypot Anti-Spam Check)
+        function handleReviewSubmit(e) {
+            e.preventDefault();
+
+            const hpVal = document.getElementById('website_hp').value;
+            const tsVal = parseInt(document.getElementById('formTimestamp').value, 10);
+            const now = Date.now();
+
+            // Honeypot check: bot filled hidden input OR submitted faster than 2 seconds
+            if (hpVal !== '' || (now - tsVal) < 2000) {
+                showToast('Acción bloqueada por seguridad anti-spam.', 'error');
+                return;
+            }
+
+            const author = document.getElementById('reviewAuthor').value.trim();
+            const rating = parseInt(document.getElementById('reviewRating').value, 10);
+            const text = document.getElementById('reviewText').value.trim();
+
+            if (!author || !text) {
+                showToast('Por favor completa todos los campos.', 'warning');
+                return;
+            }
+
+            const newReview = {
+                author,
+                rating,
+                text,
+                date: new Date().toISOString().split('T')[0]
+            };
+
+            reviews.unshift(newReview);
+            localStorage.setItem('mipan_reviews', JSON.stringify(reviews));
+            renderReviews();
+
+            document.getElementById('reviewForm').reset();
+            initFormTimestamp();
+            showToast('¡Gracias por tu reseña! Ha sido publicada.', 'success');
+        }
+
+        // Fetch BCV Exchange Rate
+        async function fetchBcvRate() {
+            const display = document.getElementById('bcvRateDisplay');
+            const icon = document.getElementById('bcvSyncIcon');
+            
+            try {
+                if (icon) icon.classList.add('animate-spin');
+                const res = await fetch('https://ve.dolarapi.com/v1/dolares/oficial');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.promedio) {
+                        display.innerText = data.promedio.toFixed(2);
+                        return;
+                    }
+                }
+                throw new Error('API offline');
+            } catch (err) {
+                display.innerText = '36.50'; 
+            } finally {
+                if (icon) icon.classList.remove('animate-spin');
+            }
+        }
+
+        // Dark Mode Logic
+        function initDarkMode() {
+            const isDark = localStorage.getItem('mipan_dark') === 'true' || 
+                           (!('mipan_dark' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            updateDarkModeIcon();
+        }
+
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('mipan_dark', isDark);
+            updateDarkModeIcon();
+            showToast(`Modo ${isDark ? 'Oscuro' : 'Claro'} activado`, 'info');
+        }
+
+        function updateDarkModeIcon() {
+            const icon = document.getElementById('darkModeIcon');
+            if (!icon) return;
+            if (document.documentElement.classList.contains('dark')) {
+                icon.className = 'fa-solid fa-sun text-amber-400';
+            } else {
+                icon.className = 'fa-solid fa-moon text-gray-700';
+            }
+        }
+
+        // Season Theme Logic
+        function initSeasonTheme() {
+            const savedTheme = localStorage.getItem('mipan_theme') || 'classic';
+            const selector = document.getElementById('seasonSelector');
+            if (selector) selector.value = savedTheme;
+            changeSeasonTheme(savedTheme, false);
+        }
+
+        function changeSeasonTheme(theme, notify = true) {
+            document.body.classList.remove('theme-navidad', 'theme-classic');
+            document.body.classList.add(`theme-${theme}`);
+            localStorage.setItem('mipan_theme', theme);
+
+            const heroTitle = document.getElementById('heroTitle');
+            const heroSubtitle = document.getElementById('heroSubtitle');
+            const heroImgTitle = document.getElementById('heroImageTitle');
+
+            if (theme === 'navidad') {
+                if (heroTitle) heroTitle.innerText = '¡Sabor Navideño Recién Horneado para tu Hogar!';
+                if (heroSubtitle) heroSubtitle.innerText = 'Celebra las fiestas con nuestro tradicional Pan de Jamón, Panettones artesanales, hallacas y exquisita repostería navideña en Los Teques.';
+                if (heroImgTitle) heroImgTitle.innerText = 'Especial Navideño • Pan de Jamón Premium';
+            } else {
+                if (heroTitle) heroTitle.innerText = 'Sabor Artesanal Recién Horneado Cada Mañana';
+                if (heroSubtitle) heroSubtitle.innerText = 'Disfruta de nuestros selectos panes artesanales, rollos de canela, brazo gitano, muffins de chocolate y especialidades con entrega directa.';
+                if (heroImgTitle) heroImgTitle.innerText = 'Pan de Jamón & Pan Artesanal';
+            }
+
+            if (notify) {
+                showToast(`Tema cambiado a: ${theme === 'navidad' ? 'Navidad 🎄' : 'Clásico 🥖'}`, 'info');
+            }
+        }
+
+        // Snowflakes Canvas Effect for Christmas Theme
+        let snowAnimationId;
+        function initSnowEffect() {
+            const canvas = document.getElementById('snowCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+
+            const numFlakes = 60;
+            const flakes = Array.from({ length: numFlakes }, () => ({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                r: Math.random() * 3 + 1,
+                d: Math.random() * 1 + 0.5,
+                opacity: Math.random() * 0.7 + 0.3
+            }));
+
+            function drawFlakes() {
+                ctx.clearRect(0, 0, width, height);
+
+                if (!document.body.classList.contains('theme-navidad')) {
+                    snowAnimationId = requestAnimationFrame(drawFlakes);
+                    return;
+                }
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.beginPath();
+                for (let i = 0; i < numFlakes; i++) {
+                    const f = flakes[i];
+                    ctx.moveTo(f.x, f.y);
+                    ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true);
+                }
+                ctx.fill();
+                moveFlakes();
+                snowAnimationId = requestAnimationFrame(drawFlakes);
+            }
+
+            function moveFlakes() {
+                for (let i = 0; i < numFlakes; i++) {
+                    const f = flakes[i];
+                    f.y += Math.pow(f.d, 2) + 1;
+                    f.x += Math.sin(f.y / 30);
+
+                    if (f.y > height) {
+                        flakes[i] = { x: Math.random() * width, y: 0, r: f.r, d: f.d, opacity: f.opacity };
+                    }
+                }
+            }
+
+            drawFlakes();
+        }
+
+        // Offline / Online Listener
+        function initNetworkListener() {
+            const netBar = document.getElementById('networkStatus');
+            function updateOnlineStatus() {
+                if (!navigator.onLine) {
+                    if (netBar) netBar.classList.remove('hidden');
+                } else {
+                    if (netBar) netBar.classList.add('hidden');
+                }
+            }
+            window.addEventListener('online', updateOnlineStatus);
+            window.addEventListener('offline', updateOnlineStatus);
+            updateOnlineStatus();
+        }
+
+        // PWA Installation Hook
+        let deferredPrompt;
+        function initPWA() {
+            const btn = document.getElementById('pwaInstallBtn');
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                if (btn) btn.classList.remove('hidden');
+            });
+        }
+
+        function installPWA() {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choice) => {
+                if (choice.outcome === 'accepted') {
+                    showToast('¡App instalada con éxito!', 'success');
+                }
+                deferredPrompt = null;
+                const btn = document.getElementById('pwaInstallBtn');
+                if (btn) btn.classList.add('hidden');
+            });
+        }
+
+        // Admin Modal Controls
+        function openAdminLogin() {
+            const modal = document.getElementById('adminLoginModal');
+            const err = document.getElementById('adminErrorMsg');
+            if (err) err.classList.add('hidden');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeAdminLogin() {
+            const modal = document.getElementById('adminLoginModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function checkAdminPassword(e) {
+            e.preventDefault();
+            const input = document.getElementById('adminPasswordInput').value;
+            const err = document.getElementById('adminErrorMsg');
+
+            if (input === 'mipan2025' || input === 'admin123') {
+                closeAdminLogin();
+                showToast('¡Bienvenido al Panel Administrativo!', 'success');
+                window.location.href = 'catalogo.html?admin=true';
+            } else {
+                if (err) err.classList.remove('hidden');
+            }
+        }
+
+        // Toast Notification System
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const bgColors = {
+                success: 'bg-emerald-600 text-white',
+                error: 'bg-rose-600 text-white',
+                warning: 'bg-amber-600 text-white',
+                info: 'bg-gray-800 text-white border border-gray-700'
+            };
+
+            const icons = {
+                success: 'fa-circle-check',
+                error: 'fa-circle-exclamation',
+                warning: 'fa-triangle-exclamation',
+                info: 'fa-circle-info'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = `max-w-xs w-full mx-auto sm:ml-auto p-3 rounded-xl shadow-xl flex items-center gap-2.5 text-xs font-semibold transform transition-all duration-300 opacity-0 translate-y-2 ${bgColors[type] || bgColors.info}`;
+            toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info} text-base"></i><span>${escapeHtml(message)}</span>`;
+
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('opacity-0', 'translate-y-2');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
