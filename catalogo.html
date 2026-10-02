@@ -35,27 +35,30 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@700;900&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans min-h-screen flex flex-col">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans min-h-screen flex flex-col relative overflow-x-hidden">
+
+    <!-- Efecto de Nieve Ligero en el Fondo -->
+    <canvas id="snowCanvas" class="fixed top-0 left-0 w-full h-full pointer-events-none z-0"></canvas>
 
     <!-- Header / Navbar -->
-    <header class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            <h1 class="font-serif text-2xl font-black text-classic-500 tracking-tight">mipan2025</h1>
+    <header class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-classic-500/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center relative z-10">
+            <h1 class="font-serif text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-classic-500 to-amber-400 tracking-tight drop-shadow-sm">mipan2025</h1>
             <button class="relative p-2 text-gray-600 dark:text-gray-300 hover:text-classic-500 transition-colors">
                 <i class="fa-solid fa-cart-shopping text-xl"></i>
-                <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-600 rounded-full">0</span>
+                <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-600 rounded-full shadow-lg">0</span>
             </button>
         </div>
     </header>
 
     <!-- Sección Interactiva del Catálogo -->
-    <main id="catalogo" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full">
+    <main id="catalogo" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full relative z-10">
         
         <!-- Título de Sección y Barra de Filtros -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
-                <h3 class="font-serif text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-                    Catálogo de Productos
+                <h3 class="font-serif text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-crown text-classic-500 text-xl"></i> Catálogo Premium
                 </h3>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
                     Sincronizado en tiempo real con la administración de mipan2025.
@@ -65,39 +68,108 @@
             <!-- Botones de Filtro -->
             <div id="categoryFilters" class="flex flex-wrap items-center gap-2">
                 <button onclick="filterCategory('todos', this)" class="cat-btn bg-classic-500 text-white border-classic-500 shadow-md px-4 py-2 rounded-full text-xs font-bold tracking-wide border transition-all">Todos</button>
-                <button onclick="filterCategory('panes', this)" class="cat-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all">🥖 Panes</button>
-                <button onclick="filterCategory('tortas_dulces', this)" class="cat-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all">🍰 Tortas y Dulces</button>
-                <button onclick="filterCategory('dulces_secos', this)" class="cat-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all">🍪 Dulces Secos</button>
-                <button onclick="filterCategory('navideno', this)" class="cat-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all">🎄 Especial Navideño</button>
-                <button onclick="filterCategory('viveres', this)" class="cat-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all">🥫 Víveres</button>
-                <button onclick="filterCategory('otros', this)" class="cat-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all">📦 Otros</button>
+                <button onclick="filterCategory('panes', this)" class="cat-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all shadow-sm hover:shadow">🥖 Panes</button>
+                <button onclick="filterCategory('tortas_dulces', this)" class="cat-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all shadow-sm hover:shadow">🍰 Tortas y Dulces</button>
+                <button onclick="filterCategory('dulces_secos', this)" class="cat-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all shadow-sm hover:shadow">🍪 Dulces Secos</button>
+                <button onclick="filterCategory('navideno', this)" class="cat-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all shadow-sm hover:shadow">🎄 Especial Navideño</button>
+                <button onclick="filterCategory('viveres', this)" class="cat-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all shadow-sm hover:shadow">🥫 Víveres</button>
+                <button onclick="filterCategory('otros', this)" class="cat-btn bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 px-4 py-2 rounded-full text-xs font-bold tracking-wide border hover:border-classic-500 hover:text-classic-500 transition-all shadow-sm hover:shadow">📦 Otros</button>
             </div>
         </div>
 
         <!-- Barra de Búsqueda -->
         <div class="mb-8 w-full max-w-lg">
             <div class="relative w-full group">
-                <input type="text" oninput="handleSearch(this.value)" placeholder="Buscar en el catálogo..." class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 dark:bg-gray-800/80 text-sm focus:outline-none focus:ring-2 focus:ring-classic-500 shadow-sm transition-all group-hover:shadow-md">
+                <input type="text" oninput="handleSearch(this.value)" placeholder="Buscar en el catálogo exclusivo..." class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-sm focus:outline-none focus:ring-2 focus:ring-classic-500 shadow-sm transition-all group-hover:shadow-lg">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-gray-400 group-focus-within:text-classic-500 transition-colors"></i>
             </div>
         </div>
 
         <!-- Grid Dinámico de Productos (Inicialmente en blanco) -->
-        <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             <!-- Renderizado dinámico vía JavaScript -->
         </div>
 
     </main>
 
+    <!-- Developer ADS Banner (Unobtrusive) -->
+    <div class="relative z-10 w-full bg-transparent py-4 border-t border-gray-200 dark:border-gray-800/50 mt-8">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col items-center justify-center text-center opacity-60 hover:opacity-100 transition-opacity duration-300">
+            <p class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest font-semibold">
+                Desarrollo de Software Premium & E-Commerce
+            </p>
+            <div class="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 mt-1">
+                <span class="font-black text-classic-500 text-xs sm:text-sm tracking-wide">AL HADIQA INVEST</span>
+                <span class="hidden sm:inline text-gray-400">|</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400">Arquitectura de programación: <strong class="text-gray-700 dark:text-gray-300 font-mono">smith bussines solutions 2026</strong></span>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
-    <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 py-6 text-center text-sm text-gray-500">
+    <footer class="bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 mt-auto relative z-10">
+        <div class="max-w-7xl mx-auto px-4 py-6 text-center text-sm text-gray-500 font-medium">
             &copy; 2026 mipan2025. Sistema de Catálogo Integrado.
         </div>
     </footer>
 
     <!-- Lógica de Funcionamiento -->
     <script>
+        // === Motor de Animación de Nieve (Background) ===
+        function initSnow() {
+            const canvas = document.getElementById('snowCanvas');
+            const ctx = canvas.getContext('2d');
+            let w = canvas.width = window.innerWidth;
+            let h = canvas.height = window.innerHeight;
+
+            // Escuchar resize
+            window.addEventListener('resize', () => {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            });
+
+            const particles = [];
+            const particleCount = 60; // Cantidad ligera para no afectar rendimiento
+
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    r: Math.random() * 3 + 1, // Radio
+                    d: Math.random() * particleCount, // Densidad
+                    speedY: Math.random() * 1 + 0.5,
+                    speedX: Math.random() * 1 - 0.5
+                });
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, w, h);
+                ctx.fillStyle = 'rgba(200, 200, 200, 0.4)'; // Color adaptable
+                ctx.beginPath();
+                for (let i = 0; i < particleCount; i++) {
+                    const p = particles[i];
+                    ctx.moveTo(p.x, p.y);
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2, true);
+                }
+                ctx.fill();
+                update();
+                requestAnimationFrame(draw);
+            }
+
+            function update() {
+                for (let i = 0; i < particleCount; i++) {
+                    const p = particles[i];
+                    p.y += p.speedY;
+                    p.x += Math.sin(p.d) * 0.5;
+
+                    if (p.y > h) {
+                        particles[i] = { x: Math.random() * w, y: -10, r: p.r, d: p.d, speedY: p.speedY, speedX: p.speedX };
+                    }
+                }
+            }
+            draw();
+        }
+
         // 1. Consumo EXCLUSIVO de datos provenientes de admin.html
         // Inicia como un array vacío si admin.html no ha guardado nada aún
         let products = JSON.parse(localStorage.getItem('mipan_products')) || [];
@@ -138,7 +210,7 @@
             renderProducts();
         }
 
-        // 4. Motor de Renderizado en el DOM
+        // 4. Motor de Renderizado en el DOM (Actualizado a Diseño Premium)
         function renderProducts() {
             const grid = document.getElementById('productGrid');
             grid.innerHTML = ''; // Limpiar grilla
@@ -157,38 +229,50 @@
             // Manejo de estado vacío (cuando no hay productos de admin.html o no coinciden con la búsqueda)
             if (filteredProducts.length === 0) {
                 grid.innerHTML = `
-                    <div class="col-span-full py-16 flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
-                        <i class="fa-solid fa-box-open text-5xl mb-4 opacity-50"></i>
-                        <p class="text-lg font-medium">El catálogo está vacío.</p>
-                        <p class="text-sm mt-2">Los productos agregados desde la administración aparecerán aquí.</p>
+                    <div class="col-span-full py-16 flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-dashed border-gray-300 dark:border-gray-600">
+                        <i class="fa-solid fa-gem text-5xl mb-4 text-classic-500 opacity-60"></i>
+                        <p class="text-xl font-serif font-bold text-gray-700 dark:text-gray-200">Catálogo en preparación</p>
+                        <p class="text-sm mt-2 text-center max-w-md">Los productos exclusivos agregados desde la administración de mipan2025 aparecerán aquí muy pronto.</p>
                     </div>
                 `;
                 return;
             }
 
-            // Inyección de tarjetas HTML basadas en los datos de admin.html
+            // Inyección de tarjetas HTML basadas en los datos de admin.html (Diseño Premium)
             filteredProducts.forEach(p => {
-                const imgPlaceholder = 'https://via.placeholder.com/600x400?text=Sin+Imagen';
+                const imgPlaceholder = 'https://via.placeholder.com/600x400?text=Sin+Imagen+Premium';
                 // Usamos la imagen en Base64 o URL que venga de admin.html, o un placeholder si no tiene
                 const imageSrc = p.image || p.fallbackImg || imgPlaceholder; 
                 
                 const card = document.createElement('div');
-                card.className = 'bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 flex flex-col group';
+                // Nuevas clases de diseño Premium
+                card.className = 'relative bg-white/80 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-classic-500/20 dark:border-classic-500/30 flex flex-col group transform hover:-translate-y-2';
                 
                 card.innerHTML = `
-                    <div class="aspect-w-4 aspect-h-3 w-full overflow-hidden bg-gray-100 dark:bg-gray-900 relative">
-                        <img src="${imageSrc}" alt="${p.name}" class="w-full h-48 object-cover object-center group-hover:scale-105 transition-transform duration-500">
-                        ${p.stock <= 0 ? `<div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center"><span class="text-white font-bold px-3 py-1 bg-red-600 rounded-full text-sm">Agotado</span></div>` : ''}
+                    <div class="aspect-w-4 aspect-h-3 w-full overflow-hidden bg-gradient-to-tr from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-900 relative">
+                        <!-- Destello superior premium -->
+                        <div class="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-black/20 to-transparent z-10"></div>
+                        
+                        <img src="${imageSrc}" alt="${p.name}" class="w-full h-56 object-cover object-center group-hover:scale-110 transition-transform duration-700 relative z-0">
+                        
+                        ${p.stock <= 0 ? `
+                        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-20">
+                            <span class="text-white font-black px-4 py-1.5 border-2 border-red-500 bg-red-600/80 rounded-full text-sm uppercase tracking-widest shadow-[0_0_15px_rgba(220,38,38,0.5)]">Agotado</span>
+                        </div>` : ''}
                     </div>
-                    <div class="p-5 flex flex-col flex-1">
-                        <div class="flex justify-between items-start mb-2">
-                            <h4 class="text-lg font-bold text-gray-900 dark:text-white leading-tight">${p.name}</h4>
+                    <div class="p-6 flex flex-col flex-1 relative z-10">
+                        <div class="flex justify-between items-start mb-3">
+                            <h4 class="text-xl font-serif font-black text-gray-900 dark:text-white leading-tight group-hover:text-classic-500 transition-colors">${p.name}</h4>
                         </div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 flex-1 line-clamp-2">${p.desc || 'Sin descripción.'}</p>
-                        <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
-                            <span class="text-xl font-black text-gray-900 dark:text-white">$${parseFloat(p.priceUsd || 0).toFixed(2)}</span>
-                            <button onclick="añadirAlCarrito('${p.id}')" ${p.stock <= 0 ? 'disabled' : ''} class="w-10 h-10 rounded-full flex items-center justify-center transition-all ${p.stock > 0 ? 'bg-classic-500 hover:bg-classic-600 text-white shadow-md hover:shadow-lg transform hover:-translate-y-0.5' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}">
-                                <i class="fa-solid fa-plus"></i>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-5 flex-1 line-clamp-3 leading-relaxed">${p.desc || 'Obra maestra de repostería sin descripción detallada.'}</p>
+                        
+                        <div class="flex items-end justify-between mt-auto pt-4 border-t border-classic-500/10 dark:border-gray-700">
+                            <div>
+                                <span class="block text-[10px] uppercase tracking-widest text-classic-500 font-bold mb-1">Precio Especial</span>
+                                <span class="text-2xl font-black text-gray-900 dark:text-white drop-shadow-sm">$${parseFloat(p.priceUsd || 0).toFixed(2)}</span>
+                            </div>
+                            <button onclick="añadirAlCarrito('${p.id}')" ${p.stock <= 0 ? 'disabled' : ''} title="Agregar al carrito" class="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${p.stock > 0 ? 'bg-gradient-to-tr from-classic-600 to-classic-500 hover:from-amber-500 hover:to-classic-400 text-white shadow-[0_4px_15px_rgba(217,119,6,0.4)] hover:shadow-[0_6px_20px_rgba(217,119,6,0.6)] transform hover:rotate-12' : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed border border-gray-300 dark:border-gray-600'}">
+                                <i class="fa-solid fa-cart-plus text-lg"></i>
                             </button>
                         </div>
                     </div>
@@ -205,13 +289,16 @@
                 const cartBadge = document.querySelector('header span');
                 let count = parseInt(cartBadge.innerText);
                 cartBadge.innerText = count + 1;
-                cartBadge.classList.add('animate-bounce');
-                setTimeout(() => cartBadge.classList.remove('animate-bounce'), 1000);
+                cartBadge.classList.add('animate-ping');
+                setTimeout(() => cartBadge.classList.remove('animate-ping'), 400);
             }
         }
 
         // Inicializar la vista al cargar el documento
-        document.addEventListener('DOMContentLoaded', renderProducts);
+        document.addEventListener('DOMContentLoaded', () => {
+            initSnow();
+            renderProducts();
+        });
     </script>
 </body>
 </html>
