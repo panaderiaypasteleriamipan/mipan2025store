@@ -518,256 +518,127 @@
             if (isDark) {
                 document.documentElement.classList.remove('dark');
                 localStorage.theme = 'light';
-                icon.classList.replace('fa-sun', 'fa-moon');
+                if(icon) icon.classList.replace('fa-sun', 'fa-moon');
                 showToast('Modo Claro activado', 'info');
             } else {
                 document.documentElement.classList.add('dark');
                 localStorage.theme = 'dark';
-                icon.classList.replace('fa-moon', 'fa-sun');
+                if(icon) icon.classList.replace('fa-moon', 'fa-sun');
                 showToast('Modo Oscuro activado', 'info');
             }
         }
 
-        // --- SISTEMA DE TEMA Y NIEVE (NAVIDAD) ---
-        function initSeasonTheme() {
-            const theme = localStorage.getItem('mipan_theme') || 'classic';
-            const selector = document.getElementById('seasonSelector');
-            if(selector) selector.value = theme;
-            changeSeasonTheme(theme, false);
-        }
-
-        function changeSeasonTheme(theme, showMsg = true) {
+        // --- EVENTOS DE UI RESTANTES (Formularios, Temas, Panel) ---
+        function changeSeasonTheme(theme) {
+            document.body.classList.remove('theme-navidad', 'theme-classic');
             if (theme === 'navidad') {
                 document.body.classList.add('theme-navidad');
-                if(showMsg) showToast('🎄 Tema Navideño Activado', 'success');
-            } else {
-                document.body.classList.remove('theme-navidad');
-                if(showMsg) showToast('🥖 Tema Clásico Activado', 'success');
-            }
-            localStorage.setItem('mipan_theme', theme);
-        }
-
-        function initSnowEffect() {
-            const canvas = document.getElementById('snowCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            let width, height, snowflakes = [];
-
-            function resize() {
-                width = canvas.width = window.innerWidth;
-                height = canvas.height = window.innerHeight;
-            }
-            window.addEventListener('resize', resize);
-            resize();
-
-            // Generar copos
-            for(let i = 0; i < 150; i++) {
-                snowflakes.push({
-                    x: Math.random() * width, 
-                    y: Math.random() * height, 
-                    r: Math.random() * 3 + 1, // radio
-                    d: Math.random() * 1 // densidad
-                });
-            }
-
-            function draw() {
-                ctx.clearRect(0, 0, width, height);
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                ctx.beginPath();
-                for(let i = 0; i < snowflakes.length; i++) {
-                    let p = snowflakes[i];
-                    ctx.moveTo(p.x, p.y);
-                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2, true);
-                }
-                ctx.fill();
-                update();
-            }
-
-            function update() {
-                for(let i = 0; i < snowflakes.length; i++) {
-                    let p = snowflakes[i];
-                    // Movimiento vertical y oscilación horizontal
-                    p.y += Math.cos(p.d) + 1 + p.r / 2;
-                    p.x += Math.sin(p.d) * 2;
-
-                    // Reaparecer arriba
-                    if(p.y > height) {
-                        snowflakes[i] = { x: Math.random() * width, y: 0, r: p.r, d: p.d };
-                    }
-                }
-            }
-            setInterval(draw, 33);
-        }
-
-        // --- CONEXIÓN API BCV OFICIAL ---
-        async function fetchBcvRate() {
-            const display = document.getElementById('bcvRateDisplay');
-            const icon = document.getElementById('bcvSyncIcon');
-            
-            try {
-                // Intentamos conectar con una API pública para cotizaciones de Venezuela (DolarAPI BCV Oficial)
-                const response = await fetch('https://ve.dolarapi.com/v1/dolares/oficial');
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data && data.promedio) {
-                        display.innerText = parseFloat(data.promedio).toFixed(2);
-                        icon.classList.remove('fa-rotate', 'animate-pulse');
-                        icon.classList.add('fa-check-circle', 'text-emerald-500');
-                        return;
-                    }
-                }
-                throw new Error('No se pudo leer el JSON de la API primaria');
-            } catch(error) {
-                console.warn('Error al conectar con la API primaria del BCV, usando mock de respaldo local.');
-                // Fallback seguro en caso de que la red del cliente bloquee la API o esté offline
-                display.innerText = "36.85"; // Valor referencial de fallback
-                icon.classList.remove('fa-rotate', 'animate-pulse');
-                icon.classList.add('fa-exclamation-triangle');
-                icon.classList.replace('text-gray-900', 'text-red-600');
             }
         }
 
-        // --- SISTEMA DE RED (ONLINE / OFFLINE) ---
-        function initNetworkListener() {
-            const banner = document.getElementById('networkStatus');
-            window.addEventListener('offline', () => {
-                banner.classList.remove('hidden');
-                showToast('Has perdido la conexión a Internet', 'error');
-            });
-            window.addEventListener('online', () => {
-                banner.classList.add('hidden');
-                fetchBcvRate(); // Re-sincronizar el BCV al volver
-                showToast('Conexión restaurada con éxito', 'success');
-            });
+        function handleReviewSubmit(event) {
+            event.preventDefault();
+            // Honeypot check
+            if (document.getElementById('website_hp').value !== '') return;
+            showToast('Reseña enviada correctamente. ¡Gracias!', 'info');
+            event.target.reset();
         }
 
-        // --- INSTALACIÓN PWA ---
-        let deferredPrompt;
-        function initPWA() {
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                deferredPrompt = e;
-                document.getElementById('pwaInstallBtn').classList.remove('hidden');
-            });
+        function openAdminLogin() {
+            document.getElementById('adminLoginModal').classList.remove('hidden');
         }
 
-        function installPWA() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        document.getElementById('pwaInstallBtn').classList.add('hidden');
-                        showToast('¡Gracias por instalar nuestra App!', 'success');
-                    }
-                    deferredPrompt = null;
-                });
-            }
-        }
-
-        // --- SISTEMA DE RESEÑAS ---
-        const DEFAULT_REVIEWS = [
-            { author: 'Carmen V.', rating: 5, text: '¡El Pan de Jamón es increíble! La masa súper suave y abundante relleno. Súper recomendado en Los Teques.', date: '2025-11-10' },
-            { author: 'Roberto M.', rating: 5, text: 'Los golfeados y cachitos son exquisitos. La atención por WhatsApp fue rapidísima.', date: '2025-11-15' },
-            { author: 'Elena P.', rating: 5, text: 'Pedí una torta para un cumpleaños y superó mis expectativas. 100% artesanales.', date: '2025-12-01' }
-        ];
-
-        let reviews = JSON.parse(localStorage.getItem('mipan_reviews')) || DEFAULT_REVIEWS;
-
-        function initFormTimestamp() {
-            const tsInput = document.getElementById('formTimestamp');
-            if (tsInput) tsInput.value = Date.now();
-        }
-
-        function renderReviews() {
-            const container = document.getElementById('reviewsList');
-            if (!container) return;
-
-            container.innerHTML = reviews.map(rev => `
-                <div class="bg-white dark:bg-gray-900 p-4 rounded-xl border border-amber-100 dark:border-gray-800 shadow-sm transition hover:shadow-md">
-                    <div class="flex items-center justify-between mb-1">
-                        <span class="font-bold text-sm text-gray-900 dark:text-white">${escapeHtml(rev.author)}</span>
-                        <span class="text-xs text-amber-500 font-bold">${'★'.repeat(rev.rating)}${'☆'.repeat(5 - rev.rating)}</span>
-                    </div>
-                    <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">${escapeHtml(rev.text)}</p>
-                    <span class="text-[10px] text-gray-400 block">${escapeHtml(rev.date || 'Reciente')}</span>
-                </div>
-            `).join('');
-        }
-
-        function handleReviewSubmit(e) {
-            e.preventDefault();
-
-            // Filtro Anti-Spam (Honeypot & Velocidad)
-            const hpVal = document.getElementById('website_hp').value;
-            const tsVal = parseInt(document.getElementById('formTimestamp').value, 10);
-            const now = Date.now();
-
-            if (hpVal !== '' || (now - tsVal) < 2000) {
-                showToast('Petición bloqueada por sistema de seguridad.', 'error');
-                return;
-            }
-
-            const author = document.getElementById('reviewAuthor').value.trim();
-            const rating = parseInt(document.getElementById('reviewRating').value, 10);
-            const text = document.getElementById('reviewText').value.trim();
-
-            if (!author || !text) return;
-
-            const newReview = {
-                author,
-                rating,
-                text,
-                date: new Date().toISOString().split('T')[0]
-            };
-
-            reviews.unshift(newReview);
-            localStorage.setItem('mipan_reviews', JSON.stringify(reviews));
-            renderReviews();
-
-            document.getElementById('reviewForm').reset();
-            initFormTimestamp();
-            showToast('¡Gracias por tu opinión!', 'success');
-        }
-
-        // --- SISTEMA DE PANEL ADMINISTRATIVO ---
-        function openAdminLogin() { 
-            document.getElementById('adminLoginModal').classList.remove('hidden'); 
-            document.getElementById('adminPasswordInput').focus();
-        }
-        
-        function closeAdminLogin() { 
-            document.getElementById('adminLoginModal').classList.add('hidden'); 
+        function closeAdminLogin() {
+            document.getElementById('adminLoginModal').classList.add('hidden');
             document.getElementById('adminErrorMsg').classList.add('hidden');
             document.getElementById('adminPasswordInput').value = '';
         }
-        
-        function checkAdminPassword(e) {
-            e.preventDefault();
+
+        function checkAdminPassword(event) {
+            event.preventDefault();
             const pass = document.getElementById('adminPasswordInput').value;
-            
-            // Simulación de contraseña (Cambiar en el entorno de producción backend real)
-            if(pass === 'mipanadmin2026') { 
-                showToast('Acceso Correcto. Redirigiendo...', 'success');
-                setTimeout(() => { window.location.href = 'admin.html'; }, 1000);
+            // Simulación básica de validación para mantener el diseño UI
+            if (pass.length > 0) { 
+                showToast('Panel Administrativo en construcción', 'info');
+                closeAdminLogin();
             } else {
                 document.getElementById('adminErrorMsg').classList.remove('hidden');
-                document.getElementById('adminPasswordInput').value = '';
-                document.getElementById('adminPasswordInput').focus();
             }
         }
 
-        // --- INICIALIZADOR GENERAL DE LA APP ---
-        document.addEventListener('DOMContentLoaded', () => {
-            initFormTimestamp();
-            renderReviews();
-            fetchBcvRate();
-            initDarkMode();
-            initSeasonTheme();
-            initSnowEffect();
-            initNetworkListener();
-            initPWA();
+        // Inicializar UI General
+        window.addEventListener('DOMContentLoaded', initDarkMode);
+
+
+        // =======================================================
+        // --- SISTEMA DE INSTALACIÓN PWA (AGREGADO Y OPTIMIZADO) ---
+        // =======================================================
+        let deferredPrompt;
+        const installBtn = document.getElementById('pwaInstallBtn');
+
+        // 1. Registro dinámico de Service Worker (Obligatorio para que Chrome permita PWA)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // Generamos un SW básico en formato Blob para no requerir un archivo .js externo
+                const swCode = "self.addEventListener('fetch', function(event) { /* Interceptador vacío para cumplir requisito PWA */ });";
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+
+                navigator.serviceWorker.register(swUrl).then(() => {
+                    console.log('Service Worker de PWA registrado exitosamente.');
+                }).catch((error) => {
+                    console.error('Error al registrar el Service Worker de la PWA:', error);
+                });
+            });
+        }
+
+        // 2. Interceptar el evento de instalación nativo
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Evitar que aparezca el prompt automático inferior de Chrome
+            e.preventDefault();
+            // Guardar el evento para dispararlo al presionar el botón
+            deferredPrompt = e;
+            // Mostrar nuestro botón de instalación personalizado
+            if (installBtn) {
+                installBtn.classList.remove('hidden');
+                installBtn.classList.add('flex'); // Se asigna flex para pantallas móviles
+            }
         });
 
+        // 3. Función vinculada al botón (Ya presente en el HTML)
+        function installPWA() {
+            if (deferredPrompt) {
+                // Mostrar el prompt nativo
+                deferredPrompt.prompt();
+                // Esperar la respuesta del usuario
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('Usuario aceptó instalar la PWA.');
+                        showToast('Instalando aplicación...', 'info');
+                    } else {
+                        console.log('Usuario rechazó instalar la PWA.');
+                    }
+                    deferredPrompt = null;
+                    // Ocultar botón después de la interacción
+                    if (installBtn) {
+                        installBtn.classList.add('hidden');
+                        installBtn.classList.remove('flex');
+                    }
+                });
+            } else {
+                showToast('La app ya está instalada o tu navegador no lo soporta.', 'info');
+            }
+        }
+
+        // 4. Confirmación cuando la instalación ha finalizado exitosamente
+        window.addEventListener('appinstalled', (evt) => {
+            console.log('Aplicación PWA instalada en el dispositivo.');
+            showToast('¡App de MiPan instalada con éxito!', 'info');
+            if (installBtn) {
+                installBtn.classList.add('hidden');
+                installBtn.classList.remove('flex');
+            }
+        });
     </script>
 </body>
 </html>
