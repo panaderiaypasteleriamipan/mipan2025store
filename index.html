@@ -787,7 +787,7 @@
             const pass = document.getElementById('adminPasswordInput').value;
             if (pass.length > 0) { 
                 showToast('Accediendo al Panel Administrativo...', 'info');
-                setTimeout(() => window.location.href = '#', 1000); // Aquí iría la ruta real
+                setTimeout(() => window.location.href = './admin.html', 1000); // Se actualizó la redirección aquí para repositorios GitHub
                 closeAdminLogin();
             } else {
                 document.getElementById('adminErrorMsg').classList.remove('hidden');
