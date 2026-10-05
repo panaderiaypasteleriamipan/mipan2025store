@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración E-commerce | MiPan 2025</title>
+    
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 500: '#8b5a2b', 600: '#734821', 900: '#3a210d' }
+                    },
+                    fontFamily: { sans: ['Public Sans', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800 h-screen flex overflow-hidden relative selection:bg-brand-500 selection:text-white">
+
+    <!-- Fondo sutil para estética premium -->
+    <div class="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 pointer-events-none z-0"></div>
+
+    <!-- Sidebar Lateral Premium -->
+    <aside class="w-72 bg-brand-900 text-white flex flex-col hidden md:flex relative z-10 shadow-2xl">
+        <div class="p-8 text-center border-b border-white/10">
+            <h2 class="text-2xl font-bold text-amber-500 tracking-tight">MiPan <span class="font-light text-white">2025</span></h2>
+            <p class="text-xs text-amber-200/60 mt-1 uppercase tracking-widest">Admin Dashboard</p>
+        </div>
+        <nav class="flex-1 p-6 space-y-3 overflow-y-auto">
+            <a href="index.html" class="block px-4 py-3 hover:bg-white/5 rounded-xl text-sm font-medium flex items-center gap-4 transition-all duration-300">
+                <i class="fa-solid fa-chart-pie w-5 text-center text-amber-500/70"></i> Dashboard
+            </a>
+            <a href="#" class="block px-4 py-3 bg-brand-600 rounded-xl text-sm font-semibold flex items-center gap-4 shadow-lg shadow-brand-900/50">
+                <i class="fa-solid fa-boxes-stacked w-5 text-center text-white"></i> Gestión de Inventario
+            </a>
+            <a href="index.html#catalogo" class="block px-4 py-3 hover:bg-white/5 rounded-xl text-sm font-medium flex items-center gap-4 transition-all duration-300">
+                <i class="fa-solid fa-store w-5 text-center text-amber-500/70"></i> Vista de Tienda
+            </a>
+        </nav>
+        <div class="p-6 border-t border-white/10">
+            <div class="bg-white/5 rounded-xl p-4 flex justify-between items-center border border-white/10">
+                <span class="text-xs text-gray-300">Tasa BCV</span>
+                <strong id="sidebarBcvRate" class="text-emerald-400 font-mono tracking-tight">0.00 Bs</strong>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Contenido Principal -->
+    <main class="flex-1 flex flex-col overflow-hidden relative z-10">
+        
+        <!-- Header -->
+        <header class="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200 px-8 py-5 flex justify-between items-center z-20">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-brand-600 transition"><i class="fa-solid fa-bars text-xl"></i></button>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Inventario y Catálogo</h1>
+                    <p class="text-xs text-gray-500 mt-1">Sincronización en tiempo real con repositorio central</p>
+                </div>
+            </div>
+            <button onclick="openModal()" class="bg-gray-900 hover:bg-black text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md flex items-center gap-2 transition-all duration-300 transform hover:-translate-y-0.5">
+                <i class="fa-solid fa-plus text-xs"></i> Añadir Producto
+            </button>
+        </header>
+
+        <!-- Tabla de Inventario -->
+        <div class="flex-1 overflow-auto p-8 relative">
+            <div id="loaderState" class="absolute inset-0 z-10 flex items-center justify-center bg-gray-50/80 backdrop-blur-sm hidden">
+                <div class="flex flex-col items-center gap-3">
+                    <i class="fa-solid fa-circle-notch fa-spin text-4xl text-brand-500"></i>
+                    <span class="text-sm font-medium text-gray-600">Sincronizando datos...</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50/50 text-gray-500 text-[11px] uppercase tracking-widest border-b border-gray-100">
+                            <th class="p-5 w-20 text-center font-semibold">Media</th>
+                            <th class="p-5 font-semibold">Producto</th>
+                            <th class="p-5 font-semibold">Categoría</th>
+                            <th class="p-5 text-right font-semibold">Precio USD</th>
+                            <th class="p-5 text-right font-semibold">Equivalente Bs</th>
+                            <th class="p-5 text-center font-semibold">Stock</th>
+                            <th class="p-5 text-center font-semibold">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTable" class="divide-y divide-gray-50 text-sm">
+                        <!-- Renderizado dinámico -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t border-gray-100 p-4 text-center text-xs text-gray-400 font-medium">
+            Desarrollado para alto rendimiento comercial por <span class="text-gray-700 font-semibold">Carlos Smith Zambrano González</span>
+        </footer>
+    </main>
+
+    <!-- Modal Formulario de Producto -->
+    <div id="productModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 overflow-y-auto transition-opacity opacity-0 duration-300">
+        <div class="bg-white rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transform scale-95 transition-transform duration-300" id="modalContent">
+            
+            <div class="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-white">
+                <h3 class="font-bold text-xl text-gray-900 tracking-tight" id="modalTitle">Nuevo Registro de Producto</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-800 transition-colors bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-8 overflow-y-auto flex-1 bg-gray-50/30">
+                <form id="productForm" onsubmit="saveProduct(event)">
+                    <input type="hidden" id="prodId">
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                        
+                        <!-- Columna Izquierda: Datos -->
+                        <div class="lg:col-span-2 space-y-6">
+                            <div>
+                                <label class="block text-[11px] uppercase tracking-wider font-bold text-gray-500 mb-2">Nombre del Producto</label>
+                                <input type="text" id="prodName" required placeholder="Ej. Pan de Jamón Premium" class="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all text-sm font-medium text-gray-800 bg-white">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-[11px] uppercase tracking-wider font-bold text-gray-500 mb-2">Precio Referencia</label>
+                                    <div class="relative">
+                                        <span class="absolute left-4 top-3 text-gray-400 font-medium">$</span>
+                                        <input type="number" id="prodPrice" step="0.01" required oninput="calculateBsPreview()" placeholder="0.00" class="w-full pl-8 p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-sm font-bold text-emerald-700 bg-white">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] uppercase tracking-wider font-bold text-gray-500 mb-2">Equivalente BCV</label>
+                                    <div class="w-full p-3 rounded-xl border border-transparent bg-gray-100 text-sm font-bold text-gray-600 flex items-center">
+                                        Bs. <span id="previewBs" class="ml-1">0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-[11px] uppercase tracking-wider font-bold text-gray-500 mb-2">Stock Inicial</label>
+                                    <input type="number" id="prodStock" required min="0" placeholder="Unidades" class="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all text-sm bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] uppercase tracking-wider font-bold text-gray-500 mb-2">Categoría</label>
+                                    <select id="prodCategory" required class="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all text-sm bg-white cursor-pointer">
+                                        <option value="panes">Panadería Artesanal</option>
+                                        <option value="dulces">Pastelería & Dulces</option>
+                                        <option value="navidad">Especiales Navideños</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] uppercase tracking-wider font-bold text-gray-500 mb-2">Descripción Comercial</label>
+                                <textarea id="prodDesc" rows="4" placeholder="Describe los atributos que hacen único a este producto..." class="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-500 outline-none transition-all text-sm resize-none bg-white"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Columna Derecha: Motor de Subida de Archivos -->
+                        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col h-full relative">
+                            <label class="block text-[11px] uppercase tracking-wider font-bold text-gray-500 mb-2">Sincronización de Imagen</label>
+                            <p class="text-xs text-gray-400 mb-4 leading-relaxed">Selecciona el archivo físico. El sistema empaquetará la imagen y la enviará al endpoint para el commit en <code class="bg-gray-100 px-1 rounded text-brand-600">/inventario</code>.</p>
+                            
+                            <input type="hidden" id="prodImageName"> <!-- Campo oculto para mantener referencia -->
+                            
+                            <label class="relative flex-1 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 hover:bg-gray-100 hover:border-brand-400 transition-all cursor-pointer flex flex-col items-center justify-center overflow-hidden group mb-4">
+                                <!-- Previsualización de FileReader -->
+                                <img id="imgPreview" src="" alt="Vista previa" class="absolute inset-0 w-full h-full object-cover hidden z-10">
+                                <div class="absolute inset-0 bg-black/40 hidden group-hover:flex items-center justify-center z-20 transition-opacity opacity-0 group-hover:opacity-100">
+                                    <span class="text-white text-xs font-bold uppercase tracking-wider"><i class="fa-solid fa-camera mr-1"></i> Cambiar Foto</span>
+                                </div>
+                                
+                                <div id="imgPlaceholder" class="text-center p-6 z-0">
+                                    <div class="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto mb-3 text-gray-400 group-hover:text-brand-500 transition-colors">
+                                        <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
+                                    </div>
+                                    <p class="text-sm font-semibold text-gray-700">Haz clic para subir</p>
+                                    <p class="text-[10px] text-gray-400 mt-1 uppercase">PNG, JPG, WEBP (Max. 2MB)</p>
+                                </div>
+                                <input type="file" id="imageFileSelector" class="hidden" accept="image/*" onchange="processLocalFile(this)">
+                            </label>
+                            
+                            <div class="bg-amber-50 border border-amber-200/50 rounded-lg p-3 flex items-start gap-3">
+                                <i class="fa-solid fa-shield-halved text-amber-500 text-sm mt-0.5"></i>
+                                <p class="text-[10px] text-amber-800 leading-tight">La imagen se adjuntará como <strong>FormData</strong> para ser procesada por el backend y enviada a GitHub de forma segura.</p>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Acciones del Modal -->
+            <div class="px-8 py-5 border-t border-gray-100 bg-white flex justify-end gap-3">
+                <button type="button" onclick="closeModal()" class="px-6 py-2.5 bg-white border border-gray-200 text-gray-600 font-semibold rounded-xl text-sm hover:bg-gray-50 transition-all">Cancelar</button>
+                <button type="submit" form="productForm" id="submitBtn" class="px-6 py-2.5 bg-gray-900 text-white font-semibold rounded-xl text-sm hover:bg-black transition-all flex items-center gap-2 shadow-lg shadow-gray-900/20 relative min-w-[160px] justify-center">
+                    <span id="btnText"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> Guardar y Sincronizar</span>
+                    <i id="btnSpinner" class="fa-solid fa-circle-notch fa-spin hidden absolute"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor Toast -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3"></div>
+
+    <script>
+        // --- Configuración de Arquitectura Backend (Endpoints) ---
+        // Aquí conectarías las rutas de tu microservicio (ej. Python Flask)
+        const API_URL = 'https://api.tudominio.com/v1/products'; 
+        const GITHUB_UPLOAD_WEBHOOK = 'https://api.tudominio.com/v1/github/upload';
+
+        // --- Estado de la Aplicación ---
+        let products = [];
+        let bcvRate = 68.50; // Idealmente, esto también se consume vía Fetch desde una API cambiaria
+        let fileToUpload = null; // Almacena el objeto File físico
+
+        // --- Inicialización ---
+        window.addEventListener('DOMContentLoaded', async () => {
+            document.getElementById('sidebarBcvRate').innerText = bcvRate.toFixed(2) + ' Bs';
+            await loadProductsFromServer();
+        });
+
+        // --- Operaciones Asíncronas (Reemplazando el uso exclusivo de LocalStorage) ---
+        async function loadProductsFromServer() {
+            const loader = document.getElementById('loaderState');
+            loader.classList.remove('hidden');
+
+            try {
+                /*  ======================================================
+                    IMPLEMENTACIÓN REAL PARA PRODUCCIÓN (DESCOMENTAR):
+                    const response = await fetch(API_URL);
+                    if(!response.ok) throw new Error('Error en API');
+                    products = await response.json();
+                    ====================================================== */
+
+                // Simulación asíncrona usando LocalStorage como base de datos mock para esta demo
+                await new Promise(resolve => setTimeout(resolve, 600)); 
+                products = JSON.parse(localStorage.getItem('mipan_products')) || [];
+                
+                renderTable();
+            } catch (error) {
+                showToast('Falla de conexión con la base de datos', 'red');
+                console.error(error);
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('inventoryTable');
+            
+            if (products.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center p-12 text-gray-400">
+                    <i class="fa-solid fa-folder-open text-4xl mb-3 block opacity-50"></i>
+                    Catálogo vacío. Añade tu primer producto premium.
+                </td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = products.map(p => {
+                const priceBs = (p.priceUsd * bcvRate).toFixed(2);
+                const stockStyle = p.stock > 5 
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                    : (p.stock > 0 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-red-50 text-red-700 border-red-200');
+                
+                // Si la ruta ya incluye 'inventario/', usarla. Si no, añadirla.
+                const imgSrc = (p.image && p.image.startsWith('inventario/')) ? p.image : `inventario/${p.image}`;
+
+                return `
+                    <tr class="hover:bg-gray-50/50 transition-colors group">
+                        <td class="p-4 text-center">
+                            <div class="w-14 h-14 rounded-xl border border-gray-200 mx-auto overflow-hidden bg-white shadow-sm group-hover:shadow-md transition-all">
+                                <img src="${imgSrc}" onerror="this.src='https://placehold.co/150x150/f8fafc/94a3b8?text=N/A'" class="w-full h-full object-cover">
+                            </div>
+                        </td>
+                        <td class="p-4 font-bold text-gray-900">${p.name}
+                            <div class="text-[10px] text-gray-400 font-normal mt-0.5 max-w-[200px] truncate">${p.desc || 'Sin descripción'}</div>
+                        </td>
+                        <td class="p-4 text-gray-500 text-sm">
+                            <span class="bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md text-xs font-medium">${p.category}</span>
+                        </td>
+                        <td class="p-4 text-right font-bold text-emerald-600">$${p.priceUsd.toFixed(2)}</td>
+                        <td class="p-4 text-right text-gray-500 font-medium">Bs. ${priceBs}</td>
+                        <td class="p-4 text-center">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold border ${stockStyle}">${p.stock}</span>
+                        </td>
+                        <td class="p-4 text-center">
+                            <div class="flex items-center justify-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                                <button onclick="editProduct('${p.id}')" class="text-blue-600 bg-blue-50 hover:bg-blue-100 w-8 h-8 rounded-lg transition-colors" title="Editar"><i class="fa-solid fa-pen text-xs"></i></button>
+                                <button onclick="deleteProduct('${p.id}')" class="text-red-600 bg-red-50 hover:bg-red-100 w-8 h-8 rounded-lg transition-colors" title="Eliminar"><i class="fa-solid fa-trash text-xs"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // --- Lógica del Motor de Archivos (FileReader) ---
+        function processLocalFile(input) {
+            if (input.files && input.files[0]) {
+                fileToUpload = input.files[0]; // Guardamos el objeto File físico para el FormData
+                
+                // Actualizamos el nombre en el input oculto
+                document.getElementById('prodImageName').value = fileToUpload.name;
+                
+                // Usamos FileReader para mostrar la vista previa real en memoria antes de subir
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imgPreview');
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                    
+                    const placeholder = document.getElementById('imgPlaceholder');
+                    placeholder.classList.add('hidden');
+                }
+                reader.readAsDataURL(fileToUpload);
+            }
+        }
+
+        // --- Lógica Principal: Guardar y Sincronizar (FormData + Fetch) ---
+        async function saveProduct(e) {
+            e.preventDefault();
+            
+            // Estado de carga UI
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+            
+            submitBtn.disabled = true;
+            btnText.classList.add('opacity-0');
+            btnSpinner.classList.remove('hidden');
+
+            try {
+                const id = document.getElementById('prodId').value || 'prod-' + Date.now();
+                let finalImageRoute = document.getElementById('prodImageName').value;
+
+                // 1. Fase de Subida a GitHub vía Backend (Solo si se seleccionó archivo nuevo)
+                if (fileToUpload) {
+                    /* ==============================================================
+                       ESTE ES EL BLOQUE QUE CONECTA CON TU SCRIPT EN PYTHON O N8N
+                       ============================================================== */
+                    const formData = new FormData();
+                    formData.append('image', fileToUpload);
+                    formData.append('target_folder', 'inventario/'); // Le decimos al backend dónde guardarla
+
+                    // Simulación del envío Fetch
+                    // const uploadResponse = await fetch(GITHUB_UPLOAD_WEBHOOK, { method: 'POST', body: formData });
+                    // const uploadResult = await uploadResponse.json();
+                    // finalImageRoute = uploadResult.github_relative_path; // ej: inventario/pan.jpg
+                    
+                    await new Promise(res => setTimeout(res, 800)); // Simulando delay de red
+                    finalImageRoute = `inventario/${fileToUpload.name}`;
+                }
+
+                // 2. Fase de Registro de Datos del Producto
+                const productData = {
+                    id: id,
+                    name: document.getElementById('prodName').value.trim(),
+                    category: document.getElementById('prodCategory').value,
+                    priceUsd: parseFloat(document.getElementById('prodPrice').value),
+                    stock: parseInt(document.getElementById('prodStock').value),
+                    image: finalImageRoute,
+                    desc: document.getElementById('prodDesc').value.trim()
+                };
+
+                /* ==============================================================
+                   ENVÍO DE DATOS A LA BASE DE DATOS PRINCIPAL
+                   ============================================================== */
+                // const method = document.getElementById('prodId').value ? 'PUT' : 'POST';
+                // const endpoint = method === 'PUT' ? `${API_URL}/${id}` : API_URL;
+                // await fetch(endpoint, {
+                //     method: method,
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify(productData)
+                // });
+
+                // Persistencia Mock para que el panel siga funcionando en tu entorno local
+                const existingIndex = products.findIndex(p => p.id === id);
+                if (existingIndex > -1) {
+                    products[existingIndex] = productData;
+                } else {
+                    products.unshift(productData);
+                }
+                localStorage.setItem('mipan_products', JSON.stringify(products));
+
+                showToast('Sincronización exitosa con la base de datos');
+                renderTable();
+                closeModal();
+
+            } catch (error) {
+                console.error("Error en sincronización:", error);
+                showToast('Error de conexión al servidor', 'red');
+            } finally {
+                // Restaurar estado UI del botón
+                submitBtn.disabled = false;
+                btnText.classList.remove('opacity-0');
+                btnSpinner.classList.add('hidden');
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (confirm('¿Confirma la eliminación permanente de este registro?')) {
+                // Simulación API Delete: await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                products = products.filter(p => p.id !== id);
+                localStorage.setItem('mipan_products', JSON.stringify(products));
+                renderTable();
+                showToast('Registro eliminado', 'red');
+            }
+        }
+
+        // --- Manejo del Modal UI ---
+        function openModal() {
+            document.getElementById('productForm').reset();
+            document.getElementById('prodId').value = '';
+            document.getElementById('modalTitle').innerText = 'Nuevo Registro de Producto';
+            document.getElementById('previewBs').innerText = '0.00';
+            document.getElementById('prodImageName').value = '';
+            fileToUpload = null;
+            
+            // Reset imagen visual
+            document.getElementById('imgPreview').classList.add('hidden');
+            document.getElementById('imgPlaceholder').classList.remove('hidden');
+
+            const modal = document.getElementById('productModal');
+            const content = document.getElementById('modalContent');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function editProduct(id) {
+            const p = products.find(prod => prod.id === id);
+            if (!p) return;
+
+            openModal(); // Limpia y abre
+            document.getElementById('modalTitle').innerText = 'Modificar Registro';
+            document.getElementById('prodId').value = p.id;
+            document.getElementById('prodName').value = p.name;
+            document.getElementById('prodPrice').value = p.priceUsd;
+            document.getElementById('prodStock').value = p.stock;
+            document.getElementById('prodCategory').value = p.category;
+            document.getElementById('prodDesc').value = p.desc;
+            
+            // Tratamiento de la imagen existente
+            let imgPath = p.image;
+            document.getElementById('prodImageName').value = imgPath;
+            
+            const preview = document.getElementById('imgPreview');
+            preview.src = imgPath.includes('inventario/') ? imgPath : `inventario/${imgPath}`;
+            preview.classList.remove('hidden');
+            document.getElementById('imgPlaceholder').classList.add('hidden');
+
+            calculateBsPreview();
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('productModal');
+            const content = document.getElementById('modalContent');
+            
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        function calculateBsPreview() {
+            const usd = parseFloat(document.getElementById('prodPrice').value) || 0;
+            document.getElementById('previewBs').innerText = (usd * bcvRate).toFixed(2);
+        }
+
+        // --- Sistema de Notificaciones Premium ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            const isError = type === 'red';
+            const bgClass = isError ? 'bg-white border-l-4 border-red-500 text-red-700' : 'bg-gray-900 border-l-4 border-brand-500 text-white';
+            const icon = isError ? '<i class="fa-solid fa-circle-xmark text-red-500"></i>' : '<i class="fa-solid fa-check-double text-brand-500"></i>';
+            
+            toast.className = `${bgClass} p-4 rounded-lg shadow-xl flex items-center gap-3 transform translate-y-6 opacity-0 transition-all duration-400 ease-out min-w-[280px]`;
+            toast.innerHTML = `${icon} <span class="font-medium text-sm tracking-wide">${message}</span>`;
+            
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-6', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-4');
+                setTimeout(() => toast.remove(), 400);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
